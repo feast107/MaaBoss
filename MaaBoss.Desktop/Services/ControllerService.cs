@@ -51,8 +51,15 @@ public class ControllerService
     [DllImport("user32.dll")]
     private static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
     [StructLayout(LayoutKind.Sequential)]
     private struct POINT { public int X, Y; }
+
+    private const uint WM_MOUSEWHEEL = 0x020A;
+    private static IntPtr MAKEWPARAM(ushort low, ushort high) => (IntPtr)(((uint)high << 16) | low);
+    private static IntPtr MAKELPARAM(ushort low, ushort high) => (IntPtr)(((uint)high << 16) | low);
 
     /// <summary>
     /// 获取目标窗口在屏幕上的完整矩形（含边框、标题栏）。
@@ -245,6 +252,22 @@ public class ControllerService
             var job = _tasker!.Controller.Swipe(x1, y1, x2, y2, durationMs);
             job.Wait().ThrowIfNot(MaaJobStatus.Succeeded);
             return new SwipeResult(true, x1, y1, x2, y2);
+        }, ct);
+    }
+
+    public async Task<ScrollResult> ScrollAsync(int x, int y, int delta, CancellationToken ct = default)
+    {
+        EnsureConnected();
+        return await Task.Run(() =>
+        {
+            if (TargetHwnd != IntPtr.Zero)
+            {
+                // 使用 SendMessage 发送 WM_MOUSEWHEEL，delta 为滚轮增量（正数向上，负数向下）
+                var wParam = MAKEWPARAM(0, (ushort)delta);
+                var lParam = MAKELPARAM((ushort)x, (ushort)y);
+                SendMessage(TargetHwnd, WM_MOUSEWHEEL, wParam, lParam);
+            }
+            return new ScrollResult(true, x, y, delta);
         }, ct);
     }
 

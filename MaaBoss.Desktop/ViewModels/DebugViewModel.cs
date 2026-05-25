@@ -12,6 +12,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using MaaBoss.Desktop.Messaging;
 using MaaBoss.Desktop.Models;
 using MaaBoss.Desktop.Services;
+using Newtonsoft.Json.Linq;
 
 namespace MaaBoss.Desktop.ViewModels;
 
@@ -55,7 +56,15 @@ public partial class DebugViewModel : ViewModelBase
     [ObservableProperty]
     public partial string FlowName { get; set; } = "未命名流程";
 
+    // 已保存的流程列表
+    [ObservableProperty]
+    public partial ObservableCollection<string> SavedFlows { get; set; } = new();
+
+    [ObservableProperty]
+    public partial string? SelectedSavedFlow { get; set; }
+
     public FlowActionType[] ActionTypes { get; } = Enum.GetValues<FlowActionType>();
+    public FlowRecognitionType[] RecognitionTypes { get; } = Enum.GetValues<FlowRecognitionType>();
 
     private readonly ControllerService _controller;
     private readonly LogService _log;
@@ -75,6 +84,8 @@ public partial class DebugViewModel : ViewModelBase
         {
             LogText = msg.Value;
         });
+
+        RefreshFlows();
     }
 
     public (int W, int H) GetControllerResolution() => _controller.Resolution;
@@ -212,6 +223,7 @@ public partial class DebugViewModel : ViewModelBase
             {
                 FlowActionType.Click => "点击",
                 FlowActionType.Swipe => "滑动",
+                FlowActionType.Scroll => "滚轮",
                 FlowActionType.Wait => "等待",
                 FlowActionType.InputText => "输入文本",
                 FlowActionType.Screenshot => "截图",
@@ -300,32 +312,197 @@ public partial class DebugViewModel : ViewModelBase
     {
         switch (step.Action)
         {
-            case FlowActionType.Click:
-                await _controller.ClickAsync(step.X, step.Y, ct);
+            case FlowActionType.Scroll:
+                _log.Info($"滚轮: ({step.X}, {step.Y}) delta={step.ScrollDelta}");
+                await _controller.ScrollAsync(step.X, step.Y, step.ScrollDelta, ct);
                 break;
-            case FlowActionType.Swipe:
-                await _controller.SwipeAsync(step.X, step.Y, step.X2, step.Y2, step.DurationMs, ct);
-                break;
-            case FlowActionType.Wait:
-            case FlowActionType.Delay:
-                await Task.Delay(step.DurationMs, ct);
-                break;
-            case FlowActionType.InputText:
-                _log.Warn("输入文本功能暂不支持");
-                break;
+
             case FlowActionType.Screenshot:
                 var path = Path.Combine(AppContext.BaseDirectory, "screenshots", $"flow_{DateTime.Now:HHmmss}.png");
+                _log.Info($"截图: {path}");
                 await _controller.ScreenshotAsync(path, ct);
                 break;
+
             case FlowActionType.Pipeline:
                 if (!string.IsNullOrWhiteSpace(step.PipelineName))
+                {
+                    _log.Info($"执行 Pipeline: {step.PipelineName}");
                     await _controller.RunPipelineAsync(step.PipelineName, null, ct);
+                }
                 break;
+
             default:
-                _log.Warn($"未知操作类型: {step.Action}");
+                await ExecutePipelineStepAsync(step, ct);
                 break;
         }
     }
+
+    private async Task ExecutePipelineStepAsync(FlowStep step, CancellationToken ct)
+    {
+        var nodeName = $"FlowStep_{step.Id:N}";
+        var pipelineOverride = BuildPipelineNode(step);
+        var wrapper = new JObject { [nodeName] = pipelineOverride };
+
+        _log.Info($"Pipeline 节点: {nodeName} | 识别: {step.Recognition} | 动作: {step.Action}");
+        if (!string.IsNullOrWhiteSpace(step.Template))
+            _log.Info($"  模板: {step.Template}");
+        if (!string.IsNullOrWhiteSpace(step.Expected))
+            _log.Info($"  期望: {step.Expected.Replace('\n', ',')}");
+
+        try
+        {
+            var result = await _controller.RunPipelineAsync(nodeName, wrapper, ct);
+            _log.Info($"Pipeline 结果: Success={result.Success}, NodeHit={result.NodeHit}");
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"Pipeline 执行失败: {ex.Message}");
+            throw;
+        }
+    }
+
+    private JObject BuildPipelineNode(FlowStep step, string? nextNodeName = null)
+    {
+        var node = new JObject();
+
+        // 识别方式
+        node["recognition"] = step.Recognition.ToString();
+
+        // 识别参数
+        if (step.Recognition == FlowRecognitionType.TemplateMatch && !string.IsNullOrWhiteSpace(step.Template))
+            node["template"] = step.Template;
+
+        if (step.Recognition == FlowRecognitionType.OCR && !string.IsNullOrWhiteSpace(step.Expected))
+        {
+            var lines = step.Expected.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => s.Trim())
+                .Where(s => !string.IsNullOrEmpty(s))
+                .ToArray();
+            if (lines.Length > 0)
+                node["expected"] = new JArray(lines);
+        }
+
+        if (step.RoiW > 0 && step.RoiH > 0)
+            node["roi"] = new JArray(step.RoiX, step.RoiY, step.RoiW, step.RoiH);
+
+        if (Math.Abs(step.Threshold - 0.8) > 0.001)
+            node["threshold"] = step.Threshold;
+
+        if (step.Inverse)
+            node["inverse"] = true;
+
+        if (step.Timeout != 20000)
+            node["timeout"] = step.Timeout;
+
+        // Action
+        switch (step.Action)
+        {
+            case FlowActionType.Click:
+                node["action"] = "Click";
+                node["target"] = new JArray(step.X, step.Y, 0, 0);
+                if (step.TargetOffsetX != 0 || step.TargetOffsetY != 0)
+                    node["target_offset"] = new JArray(step.TargetOffsetX, step.TargetOffsetY, 0, 0);
+                break;
+
+            case FlowActionType.Swipe:
+                node["action"] = "Swipe";
+                node["swipe"] = new JArray(step.X, step.Y, step.X2, step.Y2);
+                break;
+
+            case FlowActionType.InputText:
+                node["action"] = "Input";
+                node["input"] = step.Text;
+                break;
+
+            case FlowActionType.Wait:
+            case FlowActionType.Delay:
+                node["action"] = "DoNothing";
+                node["post_delay"] = step.DurationMs;
+                break;
+
+            case FlowActionType.Scroll:
+                node["action"] = "DoNothing";
+                node["_comment"] = $"Scroll: ({step.X},{step.Y}) delta={step.ScrollDelta}";
+                break;
+
+            case FlowActionType.Screenshot:
+                node["action"] = "DoNothing";
+                node["_comment"] = "Screenshot";
+                break;
+        }
+
+        // 通用延迟参数（Wait/Delay 使用 DurationMs 作为 post_delay）
+        if (step.Action != FlowActionType.Wait && step.Action != FlowActionType.Delay)
+        {
+            if (step.PreDelay != 200)
+                node["pre_delay"] = step.PreDelay;
+            if (step.PostDelay != 500)
+                node["post_delay"] = step.PostDelay;
+        }
+
+        if (nextNodeName != null)
+            node["next"] = new JArray(nextNodeName);
+        else
+            node["next"] = new JArray();
+
+        return node;
+    }
+
+    [RelayCommand]
+    private void ExportPipeline()
+    {
+        try
+        {
+            if (Steps.Count == 0)
+            {
+                _log.Warn("流程为空，无需导出");
+                return;
+            }
+
+            var pipeline = new JObject
+            {
+                ["_doc"] = $"由 MaaBoss Flow '{FlowName}' 导出，兼容 MaaPipelineEditor"
+            };
+
+            for (int i = 0; i < Steps.Count; i++)
+            {
+                var step = Steps[i];
+                var nodeName = $"Step_{i}";
+                var nextName = i < Steps.Count - 1 ? $"Step_{i + 1}" : null;
+                pipeline[nodeName] = BuildPipelineNode(step, nextName);
+            }
+
+            var json = pipeline.ToString(Newtonsoft.Json.Formatting.Indented);
+            var dir = Path.Combine(AppContext.BaseDirectory, "flows");
+            Directory.CreateDirectory(dir);
+            var path = Path.Combine(dir, $"{FlowName}_pipeline.json");
+            File.WriteAllText(path, json);
+            _log.Info($"Pipeline JSON 已导出: {path}");
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"导出 Pipeline 失败: {ex.Message}");
+        }
+    }
+
+    private void RefreshFlows()
+    {
+        var dir = Path.Combine(AppContext.BaseDirectory, "flows");
+        if (!Directory.Exists(dir))
+        {
+            SavedFlows.Clear();
+            return;
+        }
+        var files = Directory.GetFiles(dir, "*.json")
+            .Select(Path.GetFileNameWithoutExtension)
+            .OfType<string>()
+            .OrderBy(n => n)
+            .ToList();
+        SavedFlows = new ObservableCollection<string>(files);
+    }
+
+    [RelayCommand]
+    private void RefreshFlowsCommand() => RefreshFlows();
 
     [RelayCommand]
     private void SaveFlow()
@@ -333,12 +510,13 @@ public partial class DebugViewModel : ViewModelBase
         try
         {
             var dto = new FlowDto(FlowName, Steps.ToList());
-            var json = JsonSerializer.Serialize(dto, new JsonSerializerOptions { WriteIndented = true });
+            var json = System.Text.Json.JsonSerializer.Serialize(dto, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
             var dir = Path.Combine(AppContext.BaseDirectory, "flows");
             Directory.CreateDirectory(dir);
             var path = Path.Combine(dir, $"{FlowName}.json");
             File.WriteAllText(path, json);
             _log.Info($"流程已保存: {path}");
+            RefreshFlows();
         }
         catch (Exception ex)
         {
@@ -347,26 +525,34 @@ public partial class DebugViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void LoadFlow()
+    private void LoadFlow(string? flowName = null)
     {
         try
         {
             var dir = Path.Combine(AppContext.BaseDirectory, "flows");
             if (!Directory.Exists(dir)) return;
-            var files = Directory.GetFiles(dir, "*.json");
-            if (files.Length == 0)
+
+            var name = flowName ?? SelectedSavedFlow;
+            if (string.IsNullOrWhiteSpace(name))
             {
-                _log.Warn("没有找到流程文件");
+                _log.Warn("请选择要加载的流程");
                 return;
             }
-            var path = files[0];
+
+            var path = Path.Combine(dir, $"{name}.json");
+            if (!File.Exists(path))
+            {
+                _log.Warn($"流程文件不存在: {path}");
+                return;
+            }
+
             var json = File.ReadAllText(path);
-            var dto = JsonSerializer.Deserialize<FlowDto>(json);
+            var dto = System.Text.Json.JsonSerializer.Deserialize<FlowDto>(json);
             if (dto == null) return;
             FlowName = dto.Name;
             Steps = new ObservableCollection<FlowStep>(dto.Steps);
             SelectedStep = Steps.FirstOrDefault();
-            _log.Info($"流程已加载: {path}");
+            _log.Info($"流程已加载: {name}");
         }
         catch (Exception ex)
         {
