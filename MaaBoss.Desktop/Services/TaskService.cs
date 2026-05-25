@@ -31,7 +31,17 @@ public class TaskService
             return ToolResult.Err("LAUNCH_FAILED", result.ErrorMessage ?? "连接失败", "请检查客户端是否已安装并处于前台");
 
         if (waitReady)
-            await _ctrl.RunPipelineAsync("Startup", null, ct);
+        {
+            try
+            {
+                await _ctrl.RunPipelineAsync("Startup", null, ct);
+            }
+            catch (Exception ex)
+            {
+                // Startup pipeline 失败不应阻断连接，仅记录日志
+                Console.WriteLine($"[WARN] Startup pipeline 执行失败: {ex.Message}");
+            }
+        }
 
         return ToolResult.Ok(
             ("controller_type", result.ControllerType),

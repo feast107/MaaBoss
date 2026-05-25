@@ -46,6 +46,10 @@ public class ControllerService
 
             var userPath = Path.Combine(AppContext.BaseDirectory, ".cache");
             Directory.CreateDirectory(userPath);
+            // MaaFramework 会尝试加载 runtimes/win-x64/native/plugins 下的 DLL，
+            // 目录不存在时会报 ERROR，提前创建空目录避免日志噪音。
+            var pluginDir = Path.Combine(AppContext.BaseDirectory, "runtimes", "win-x64", "native", "plugins");
+            Directory.CreateDirectory(pluginDir);
             MaaToolkit.Shared.Config.InitOption(userPath);
 
             MaaController controller;
