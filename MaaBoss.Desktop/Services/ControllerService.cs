@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MaaFramework.Binding;
@@ -27,6 +28,52 @@ public class ControllerService
                 return (w, h);
             return (0, 0);
         }
+    }
+
+    /// <summary>目标窗口句柄（Win32 模式下有效）</summary>
+    public IntPtr TargetHwnd { get; private set; } = IntPtr.Zero;
+
+    /// <summary>当前鼠标输入方式</summary>
+    public Win32InputMethod CurrentMouseMethod { get; private set; } = Win32InputMethod.SendMessageWithCursorPos;
+
+    /// <summary>当前截图方式</summary>
+    public Win32ScreencapMethod CurrentScreencapMethod { get; private set; } = Win32ScreencapMethod.DXGI_DesktopDup_Window;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECT { public int Left, Top, Right, Bottom; }
+
+    [DllImport("user32.dll")]
+    private static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+    [DllImport("user32.dll")]
+    private static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+
+    [DllImport("user32.dll")]
+    private static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT { public int X, Y; }
+
+    /// <summary>
+    /// 获取目标窗口在屏幕上的完整矩形（含边框、标题栏）。
+    /// </summary>
+    public (int X, int Y, int W, int H) GetWindowRect()
+    {
+        if (TargetHwnd == IntPtr.Zero || !GetWindowRect(TargetHwnd, out var rect))
+            return (0, 0, 0, 0);
+        return (rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
+    }
+
+    /// <summary>
+    /// 获取目标窗口客户区在屏幕上的位置和尺寸。
+    /// </summary>
+    public (int X, int Y, int W, int H) GetClientRectOnScreen()
+    {
+        if (TargetHwnd == IntPtr.Zero) return (0, 0, 0, 0);
+        var pt = new POINT { X = 0, Y = 0 };
+        if (!GetClientRect(TargetHwnd, out var clientRect) || !ClientToScreen(TargetHwnd, ref pt))
+            return (0, 0, 0, 0);
+        return (pt.X, pt.Y, clientRect.Right - clientRect.Left, clientRect.Bottom - clientRect.Top);
     }
 
     /// <summary>
@@ -87,6 +134,10 @@ public class ControllerService
                 }
                 target ??= windows[0];
 
+                TargetHwnd = target.Handle;
+                CurrentMouseMethod = mouseMethod;
+                CurrentScreencapMethod = screencapMethod;
+
                 controller = target.ToWin32ControllerWith(
                     screencapMethod: screencapMethod,
                     mouseMethod: mouseMethod,
@@ -145,6 +196,9 @@ public class ControllerService
     {
         _tasker?.Dispose();
         _tasker = null;
+        TargetHwnd = IntPtr.Zero;
+        CurrentMouseMethod = Win32InputMethod.SendMessageWithCursorPos;
+        CurrentScreencapMethod = Win32ScreencapMethod.DXGI_DesktopDup_Window;
     }
 
     public async Task<ScreenshotResult> ScreenshotAsync(string? savePath, CancellationToken ct = default)

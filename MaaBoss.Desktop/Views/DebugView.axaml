@@ -21,6 +21,7 @@
             </Panel>
           </Border>
           <TextBlock Text="{Binding CursorPosText}" FontSize="12" Opacity="0.7" FontFamily="Consolas, monospace"/>
+          <TextBlock Text="{Binding DiagnosticText}" FontSize="11" Opacity="0.6" FontFamily="Consolas, monospace" TextWrapping="Wrap"/>
           <Button Content="截图" Command="{Binding TakeScreenshotCommand}" HorizontalAlignment="Left"/>
         </StackPanel>
       </Border>

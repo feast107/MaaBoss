@@ -48,6 +48,9 @@ public partial class DebugViewModel : ViewModelBase
     [ObservableProperty]
     public partial string CursorPosText { get; set; } = "鼠标在截图区域内移动以查看坐标";
 
+    [ObservableProperty]
+    public partial string DiagnosticText { get; set; } = "";
+
     private readonly ControllerService _controller;
     private readonly LogService _log;
 
@@ -69,12 +72,32 @@ public partial class DebugViewModel : ViewModelBase
 
     public (int W, int H) GetControllerResolution() => _controller.Resolution;
 
-    public void UpdateCursorPosition(int imgX, int imgY, int targetX, int targetY)
+    public void UpdateDiagnostic(Bitmap? bitmap)
+    {
+        if (bitmap == null)
+        {
+            DiagnosticText = "";
+            return;
+        }
+
+        var srcSize = bitmap.PixelSize;
+        var (ctrlW, ctrlH) = _controller.Resolution;
+        var hwnd = _controller.TargetHwnd;
+        var (winX, winY, winW, winH) = _controller.GetWindowRect();
+        var (cliX, cliY, cliW, cliH) = _controller.GetClientRectOnScreen();
+        var mouse = _controller.CurrentMouseMethod;
+        var scap = _controller.CurrentScreencapMethod;
+
+        DiagnosticText = $"截图: {srcSize.Width}x{srcSize.Height} | 控制器: {ctrlW}x{ctrlH} | 鼠标: {mouse} | 截图方式: {scap}\n" +
+                         $"HWND: {hwnd} | 窗口: ({winX},{winY}) {winW}x{winH} | 客户区: ({cliX},{cliY}) {cliW}x{cliH}";
+    }
+
+    public void UpdateCursorPosition(int imgX, int imgY, int targetX, int targetY, double pctX = 0, double pctY = 0)
     {
         if (imgX < 0)
             CursorPosText = "鼠标在截图区域内移动以查看坐标";
         else
-            CursorPosText = $"截图内: ({imgX}, {imgY})  →  窗体: ({targetX}, {targetY})";
+            CursorPosText = $"截图内: ({imgX}, {imgY})  [控件: {pctX:P1}, {pctY:P1}]  →  目标: ({targetX}, {targetY})";
     }
 
     [RelayCommand]
@@ -93,6 +116,7 @@ public partial class DebugViewModel : ViewModelBase
             {
                 await using var stream = File.OpenRead(path);
                 Screenshot = new Bitmap(stream);
+                UpdateDiagnostic(Screenshot);
                 _log.Info($"截图已保存: {path}");
                 WeakReferenceMessenger.Default.Send(new ScreenshotTakenMessage(path));
             }
