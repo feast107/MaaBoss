@@ -41,7 +41,8 @@ public partial class DashboardViewModel : ViewModelBase
         StatusText = "正在连接 Win32...";
         try
         {
-            var result = await _tasks.LaunchAppAsync("win32", null, true, _settings.SelectedScreencapMethodOption.Value, default);
+            var preset = _settings.SelectedControllerPreset;
+            var result = await _tasks.LaunchAppAsync("win32", null, true, preset.Screencap, preset.Mouse, preset.Keyboard, default);
             UpdateStatus(result);
         }
         finally { IsBusy = false; }
@@ -54,7 +55,8 @@ public partial class DashboardViewModel : ViewModelBase
         StatusText = "正在连接 ADB...";
         try
         {
-            var result = await _tasks.LaunchAppAsync("adb", "127.0.0.1:5555", true, _settings.SelectedScreencapMethodOption.Value, default);
+            var preset = _settings.SelectedControllerPreset;
+            var result = await _tasks.LaunchAppAsync("adb", "127.0.0.1:5555", true, preset.Screencap, preset.Mouse, preset.Keyboard, default);
             UpdateStatus(result);
         }
         finally { IsBusy = false; }

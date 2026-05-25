@@ -119,7 +119,9 @@ public static class McpServerSetup
                     arguments.GetProperty("platform").GetString()!,
                     arguments.TryGetProperty("adb_address", out var adb) && adb.ValueKind != JsonValueKind.Null ? adb.GetString() : null,
                     arguments.TryGetProperty("wait_ready", out var wr) ? wr.GetBoolean() : true,
-                    Win32ScreencapMethod.DXGI_DesktopDup_Window, ct),
+                    Win32ScreencapMethod.DXGI_DesktopDup_Window,
+                    Win32InputMethod.SendMessageWithCursorPos,
+                    Win32InputMethod.PostMessage, ct),
 
                 "browse_candidates" => await tasks.BrowseCandidatesAsync(
                     GetStringOrNull(arguments, "keyword"),

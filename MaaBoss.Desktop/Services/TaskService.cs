@@ -22,12 +22,17 @@ public class TaskService
         _ctrl = ctrl;
     }
 
-    public async Task<ToolResult> LaunchAppAsync(string platform, string? adbAddress, bool waitReady, Win32ScreencapMethod screencapMethod = Win32ScreencapMethod.DXGI_DesktopDup_Window, CancellationToken ct = default)
+    public async Task<ToolResult> LaunchAppAsync(
+        string platform, string? adbAddress, bool waitReady,
+        Win32ScreencapMethod screencapMethod = Win32ScreencapMethod.DXGI_DesktopDup_Window,
+        Win32InputMethod mouseMethod = Win32InputMethod.SendMessageWithCursorPos,
+        Win32InputMethod keyboardMethod = Win32InputMethod.PostMessage,
+        CancellationToken ct = default)
     {
-        // Win32 模式下默认使用 boss-zhipin.exe 进程名
-        string? windowName = platform.ToLowerInvariant() == "win32" ? "boss-zhipin.exe" : null;
+        // Win32 模式下默认使用 BOSS直聘 进程名
+        string? windowName = platform.ToLowerInvariant() == "win32" ? "BOSS直聘" : null;
 
-        var result = await _ctrl.ConnectAsync(platform, adbAddress, windowName, screencapMethod, ct);
+        var result = await _ctrl.ConnectAsync(platform, adbAddress, windowName, screencapMethod, mouseMethod, keyboardMethod, ct);
         if (!result.Success)
             return ToolResult.Err("LAUNCH_FAILED", result.ErrorMessage ?? "连接失败", "请检查客户端是否已安装并处于前台");
 

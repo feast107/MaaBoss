@@ -38,6 +38,8 @@ public class ControllerService
         string? adbAddress = null,
         string? windowName = null,
         Win32ScreencapMethod screencapMethod = Win32ScreencapMethod.DXGI_DesktopDup_Window,
+        Win32InputMethod mouseMethod = Win32InputMethod.SendMessageWithCursorPos,
+        Win32InputMethod keyboardMethod = Win32InputMethod.PostMessage,
         CancellationToken ct = default)
     {
         await _lock.WaitAsync(ct);
@@ -73,7 +75,7 @@ public class ControllerService
                     return new ConnectResult(false, "win32", "-", "未找到目标窗口");
 
                 DesktopWindowInfo? target = null;
-                var searchName = windowName ?? "boss";
+                var searchName = windowName ?? "BOSS直聘";
                 foreach (var win in windows)
                 {
                     if (win.Name.Contains(searchName, StringComparison.OrdinalIgnoreCase) ||
@@ -87,6 +89,8 @@ public class ControllerService
 
                 controller = target.ToWin32ControllerWith(
                     screencapMethod: screencapMethod,
+                    mouseMethod: mouseMethod,
+                    keyboardMethod: keyboardMethod,
                     link: LinkOption.Start,
                     check: CheckStatusOption.ThrowIfNotSucceeded);
             }

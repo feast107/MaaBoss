@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MaaFramework.Binding;
@@ -8,19 +7,26 @@ namespace MaaBoss.Desktop.ViewModels;
 
 public partial class SettingsViewModel : ViewModelBase
 {
-    public record ScreencapMethodOption(string Name, Win32ScreencapMethod Value);
+    /// <summary>
+    /// 控制器预设：打包截图方式 + 鼠标方式 + 键盘方式。
+    /// 设计参考 MaaEnd 的 interface.json 控制器配置。
+    /// </summary>
+    public record ControllerPreset(
+        string Name,
+        Win32ScreencapMethod Screencap,
+        Win32InputMethod Mouse,
+        Win32InputMethod Keyboard);
 
-    public ObservableCollection<ScreencapMethodOption> ScreencapMethodOptions { get; } = new()
+    public ObservableCollection<ControllerPreset> ControllerPresets { get; } = new()
     {
-        new("DXGI 窗口裁剪 (推荐)", Win32ScreencapMethod.DXGI_DesktopDup_Window),
-        new("DXGI 桌面复制", Win32ScreencapMethod.DXGI_DesktopDup),
-        new("GDI 位图复制", Win32ScreencapMethod.GDI),
-        new("PrintWindow", Win32ScreencapMethod.PrintWindow),
-        new("屏幕 DC", Win32ScreencapMethod.ScreenDC),
+        new("后台窗口 (DXGI)", Win32ScreencapMethod.DXGI_DesktopDup_Window, Win32InputMethod.SendMessageWithCursorPos, Win32InputMethod.PostMessage),
+        new("后台窗口 (PrintWindow)", Win32ScreencapMethod.PrintWindow, Win32InputMethod.SendMessageWithWindowPos, Win32InputMethod.PostMessage),
+        new("前台独占", Win32ScreencapMethod.ScreenDC, Win32InputMethod.Seize, Win32InputMethod.Seize),
     };
 
     [ObservableProperty]
-    public partial ScreencapMethodOption SelectedScreencapMethodOption { get; set; } = new("DXGI 窗口裁剪 (推荐)", Win32ScreencapMethod.DXGI_DesktopDup_Window);
+    public partial ControllerPreset SelectedControllerPreset { get; set; } = new(
+        "后台窗口 (DXGI)", Win32ScreencapMethod.DXGI_DesktopDup_Window, Win32InputMethod.SendMessageWithCursorPos, Win32InputMethod.PostMessage);
 
     [ObservableProperty]
     public partial string Win32WindowName { get; set; } = "boss-zhipin.exe";
@@ -55,7 +61,7 @@ public partial class SettingsViewModel : ViewModelBase
     [RelayCommand]
     private void ResetDefaults()
     {
-        SelectedScreencapMethodOption = ScreencapMethodOptions[0];
+        SelectedControllerPreset = ControllerPresets[0];
         Win32WindowName = "boss-zhipin.exe";
         AdbPath = "adb";
         AdbAddress = "127.0.0.1:5555";
