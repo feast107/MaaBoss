@@ -20,7 +20,7 @@ public partial class MainWindowViewModel : ViewModelBase
         var navService = new NavigationService();
 
         // 注册所有页面
-        navService.RegisterViewModel("Dashboard", () => new DashboardViewModel());
+        navService.RegisterViewModel("Dashboard", () => ServiceLocator.Get<DashboardViewModel>());
         navService.RegisterViewModel("Candidates", () => new CandidateBrowserViewModel());
         navService.RegisterViewModel("Chat", () => new ChatViewModel());
         navService.RegisterViewModel("Debug", () => new DebugViewModel());
