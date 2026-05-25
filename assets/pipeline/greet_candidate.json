@@ -1,0 +1,39 @@
+{
+    "_doc": "候选人沟通发起流程：选择候选人、点击打招呼、处理弹窗",
+    "GreetCandidate": {
+        "recognition": "TemplateMatch",
+        "template": "candidates/candidate_card_first.png",
+        "action": "Click",
+        "next": ["ClickGreetButton"]
+    },
+    "ClickGreetButton": {
+        "recognition": "TemplateMatch",
+        "template": "candidates/btn_greet.png",
+        "action": "Click",
+        "next": ["HandleGreeting", "GreetSuccess"]
+    },
+    "HandleGreeting": {
+        "recognition": "TemplateMatch",
+        "template": "candidates/greeting_input.png",
+        "action": "Click",
+        "next": ["InputGreeting"]
+    },
+    "InputGreeting": {
+        "recognition": "DirectHit",
+        "action": "Input",
+        "input": "{{greeting_msg}}",
+        "next": ["SendGreeting"]
+    },
+    "SendGreeting": {
+        "recognition": "TemplateMatch",
+        "template": "candidates/btn_send_greeting.png",
+        "action": "Click",
+        "next": ["GreetSuccess"]
+    },
+    "GreetSuccess": {
+        "recognition": "TemplateMatch",
+        "template": "candidates/greet_success_toast.png",
+        "timeout": 10000,
+        "next": []
+    }
+}

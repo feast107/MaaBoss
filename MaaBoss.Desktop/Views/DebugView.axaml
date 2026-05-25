@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MaaBoss.Desktop.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="MaaBoss.Desktop.Views.DebugView"
+             x:DataType="vm:DebugViewModel">
+
+  <Grid ColumnDefinitions="*,400">
+    <StackPanel Grid.Column="0" Spacing="12" Margin="0,0,16,0">
+      <TextBlock Text="调试面板" FontSize="24" FontWeight="Bold"/>
+
+      <Border Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="16">
+        <StackPanel Spacing="8">
+          <TextBlock Text="屏幕截图" FontSize="16" FontWeight="SemiBold"/>
+          <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" Height="400" HorizontalAlignment="Stretch">
+            <Panel>
+              <TextBlock Text="暂无截图，点击下方按钮截取" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.5" IsVisible="{Binding Screenshot, Converter={x:Static ObjectConverters.IsNull}}"/>
+              <Image Source="{Binding Screenshot}" Stretch="Uniform" IsVisible="{Binding Screenshot, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+            </Panel>
+          </Border>
+          <Button Content="截图" Command="{Binding TakeScreenshotCommand}" HorizontalAlignment="Left"/>
+        </StackPanel>
+      </Border>
+
+      <Border Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="16">
+        <StackPanel Spacing="12">
+          <TextBlock Text="坐标操作" FontSize="16" FontWeight="SemiBold"/>
+
+          <StackPanel Spacing="8">
+            <TextBlock Text="点击" FontSize="14"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBox Text="{Binding ClickX}" Watermark="X" Width="80"/>
+              <TextBox Text="{Binding ClickY}" Watermark="Y" Width="80"/>
+              <Button Content="点击" Command="{Binding ClickCommand}" Padding="12,4"/>
+            </StackPanel>
+          </StackPanel>
+
+          <StackPanel Spacing="8">
+            <TextBlock Text="滑动" FontSize="14"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBox Text="{Binding SwipeX1}" Watermark="X1" Width="70"/>
+              <TextBox Text="{Binding SwipeY1}" Watermark="Y1" Width="70"/>
+              <TextBox Text="{Binding SwipeX2}" Watermark="X2" Width="70"/>
+              <TextBox Text="{Binding SwipeY2}" Watermark="Y2" Width="70"/>
+              <Button Content="滑动" Command="{Binding SwipeCommand}" Padding="12,4"/>
+            </StackPanel>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="16">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Pipeline 执行" FontSize="16" FontWeight="SemiBold"/>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBox Text="{Binding PipelineName}" Watermark="Pipeline 名称" Width="200"/>
+            <Button Content="执行" Command="{Binding RunPipelineCommand}" Padding="12,4"/>
+            <Button Content="重载资源" Command="{Binding ReloadResourcesCommand}" Padding="12,4"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+
+    <StackPanel Grid.Column="1" Spacing="8">
+      <TextBlock Text="运行日志" FontSize="16" FontWeight="SemiBold"/>
+      <Border Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="8">
+        <ScrollViewer Height="600">
+          <TextBlock Text="{Binding LogText}" FontFamily="Consolas, monospace" FontSize="12" TextWrapping="Wrap"/>
+        </ScrollViewer>
+      </Border>
+      <Button Content="清空日志" Command="{Binding ClearLogCommand}" HorizontalAlignment="Right"/>
+    </StackPanel>
+  </Grid>
+</UserControl>

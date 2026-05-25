@@ -1,0 +1,27 @@
+{
+    "_doc": "候选人简历详情查看流程",
+    "ViewCandidateDetail": {
+        "recognition": "OCR",
+        "expected": ["{{candidate_name}}"],
+        "roi": [0, 200, 1080, 1600],
+        "action": "Click",
+        "next": ["WaitDetailPage"]
+    },
+    "WaitDetailPage": {
+        "recognition": "TemplateMatch",
+        "template": "candidates/resume_section_work.png",
+        "timeout": 10000,
+        "next": ["ExtractInfo", "ViewComplete"]
+    },
+    "ExtractInfo": {
+        "recognition": "OCR",
+        "roi": [0, 0, 1080, 1920],
+        "action": "DoNothing",
+        "next": ["ViewComplete"]
+    },
+    "ViewComplete": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": []
+    }
+}

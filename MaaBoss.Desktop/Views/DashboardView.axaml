@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MaaBoss.Desktop.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="MaaBoss.Desktop.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+  <ScrollViewer>
+    <StackPanel Spacing="16">
+      <TextBlock Text="仪表盘" FontSize="24" FontWeight="Bold"/>
+
+      <Border Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="16">
+        <StackPanel Spacing="12">
+          <TextBlock Text="连接状态" FontSize="18" FontWeight="SemiBold"/>
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <StackPanel Grid.Column="0" Spacing="8">
+              <TextBlock Text="{Binding StatusText}" FontSize="14" Opacity="0.8"/>
+              <StackPanel Orientation="Horizontal" Spacing="16">
+                <TextBlock Text="{Binding ControllerType}" FontSize="12" Opacity="0.6"/>
+                <TextBlock Text="{Binding Resolution}" FontSize="12" Opacity="0.6"/>
+              </StackPanel>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+              <Button Content="连接 Win32" Command="{Binding ConnectWin32Command}" IsEnabled="{Binding !IsBusy}"/>
+              <Button Content="连接 ADB" Command="{Binding ConnectAdbCommand}" IsEnabled="{Binding !IsBusy}"/>
+              <Button Content="断开" Command="{Binding DisconnectCommand}" IsEnabled="{Binding IsConnected}"/>
+            </StackPanel>
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <Border Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="16">
+        <StackPanel Spacing="12">
+          <TextBlock Text="快捷操作" FontSize="18" FontWeight="SemiBold"/>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="截图" Command="{Binding QuickScreenshotCommand}" IsEnabled="{Binding IsConnected}"/>
+            <Button Content="职位状态" Command="{Binding CheckJobPostsCommand}" IsEnabled="{Binding IsConnected}"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="16">
+        <StackPanel Spacing="12">
+          <TextBlock Text="MCP Server" FontSize="18" FontWeight="SemiBold"/>
+          <TextBlock Text="SSE 端点: http://localhost:5000/sse" FontSize="13" Opacity="0.8"/>
+          <TextBlock Text="Message 端点: POST http://localhost:5000/message" FontSize="13" Opacity="0.8"/>
+          <TextBlock Text="任何兼容 MCP 的 Agent 可通过上述地址调用工具。" FontSize="12" Opacity="0.6" TextWrapping="Wrap"/>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

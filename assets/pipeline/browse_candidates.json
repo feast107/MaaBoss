@@ -1,0 +1,50 @@
+{
+    "_doc": "候选人浏览流程：筛选、浏览、收集候选人列表",
+    "BrowseCandidates": {
+        "recognition": "TemplateMatch",
+        "template": "candidates/tab_recommend.png",
+        "action": "Click",
+        "next": ["SwitchListType", "CollectCandidates"]
+    },
+    "SwitchListType": {
+        "recognition": "TemplateMatch",
+        "template": "candidates/tab_{{list_type}}.png",
+        "action": "Click",
+        "next": ["InputKeyword", "CollectCandidates"]
+    },
+    "InputKeyword": {
+        "recognition": "TemplateMatch",
+        "template": "candidates/search_box.png",
+        "action": "Click",
+        "next": ["TypeKeyword"]
+    },
+    "TypeKeyword": {
+        "recognition": "DirectHit",
+        "action": "Input",
+        "input": "{{keyword}}",
+        "next": ["ConfirmSearch"]
+    },
+    "ConfirmSearch": {
+        "recognition": "TemplateMatch",
+        "template": "candidates/search_confirm.png",
+        "action": "Click",
+        "next": ["CollectCandidates"]
+    },
+    "CollectCandidates": {
+        "recognition": "OCR",
+        "expected": ["{{candidate_name_pattern}}"],
+        "action": "DoNothing",
+        "next": ["SwipeNextPage", "BrowseComplete"]
+    },
+    "SwipeNextPage": {
+        "recognition": "DirectHit",
+        "action": "Swipe",
+        "swipe": [960, 800, 960, 300],
+        "next": ["CollectCandidates"]
+    },
+    "BrowseComplete": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": []
+    }
+}

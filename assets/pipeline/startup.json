@@ -1,0 +1,20 @@
+{
+    "_doc": "启动流程：连接客户端并等待主界面加载",
+    "Startup": {
+        "recognition": "TemplateMatch",
+        "template": "startup/app_icon.png",
+        "action": "Click",
+        "next": ["WaitMainScreen"]
+    },
+    "WaitMainScreen": {
+        "recognition": "TemplateMatch",
+        "template": "startup/main_tab_jobs.png",
+        "timeout": 30000,
+        "next": ["StartupSuccess"]
+    },
+    "StartupSuccess": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": []
+    }
+}

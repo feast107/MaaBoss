@@ -1,0 +1,44 @@
+{
+    "_doc": "消息沟通流程：进入消息列表、识别未读、发送消息",
+    "EnterChatList": {
+        "recognition": "TemplateMatch",
+        "template": "chat/tab_message.png",
+        "action": "Click",
+        "next": ["FindUnread"]
+    },
+    "FindUnread": {
+        "recognition": "OCR",
+        "expected": ["{{contact_name}}"],
+        "action": "Click",
+        "next": ["InputMessage"]
+    },
+    "InputMessage": {
+        "recognition": "TemplateMatch",
+        "template": "chat/input_box.png",
+        "action": "Click",
+        "next": ["TypeMessage"]
+    },
+    "TypeMessage": {
+        "recognition": "DirectHit",
+        "action": "Input",
+        "input": "{{message}}",
+        "next": ["SendMessage"]
+    },
+    "SendMessage": {
+        "recognition": "TemplateMatch",
+        "template": "chat/btn_send.png",
+        "action": "Click",
+        "next": ["WaitReply", "ChatComplete"]
+    },
+    "WaitReply": {
+        "recognition": "TemplateMatch",
+        "template": "chat/new_reply_indicator.png",
+        "timeout": 30000,
+        "next": ["ChatComplete"]
+    },
+    "ChatComplete": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": []
+    }
+}

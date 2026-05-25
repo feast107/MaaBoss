@@ -1,0 +1,40 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:MaaBoss.Desktop.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+        x:Class="MaaBoss.Desktop.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="{Binding WindowTitle}"
+        Width="1280" Height="800">
+
+  <SplitView IsPaneOpen="True" DisplayMode="CompactInline" CompactPaneLength="56" OpenPaneLength="180">
+    <SplitView.Pane>
+      <Border Background="{DynamicResource SystemChromeLowColor}">
+        <ScrollViewer>
+          <ItemsControl ItemsSource="{Binding NavigationItems}" Padding="4">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Button HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Padding="12,8"
+                        Margin="0,2"
+                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
+                        CommandParameter="{Binding .}">
+                  <TextBlock Text="{Binding Title}" VerticalAlignment="Center"/>
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+    </SplitView.Pane>
+
+    <SplitView.Content>
+      <Border Padding="16">
+        <ContentControl Content="{Binding CurrentViewModel}" />
+      </Border>
+    </SplitView.Content>
+  </SplitView>
+</Window>

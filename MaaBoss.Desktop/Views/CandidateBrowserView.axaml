@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MaaBoss.Desktop.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="MaaBoss.Desktop.Views.CandidateBrowserView"
+             x:DataType="vm:CandidateBrowserViewModel">
+
+  <Grid RowDefinitions="Auto,*">
+    <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,12">
+      <TextBlock Text="候选人浏览" FontSize="24" FontWeight="Bold"/>
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <TextBox Text="{Binding Keyword}" Watermark="关键词" Width="150"/>
+        <ComboBox ItemsSource="{Binding ListTypes}" SelectedItem="{Binding SelectedListType}" Width="120"/>
+        <Button Content="浏览" Command="{Binding BrowseCommand}" IsEnabled="{Binding !IsBusy}"/>
+        <Button Content="滑动" Command="{Binding SwipeDownCommand}" IsEnabled="{Binding !IsBusy}"/>
+        <Button Content="批量打招呼" Command="{Binding BatchGreetCommand}" IsEnabled="{Binding !IsBusy}"/>
+      </StackPanel>
+    </StackPanel>
+
+    <ScrollViewer Grid.Row="1">
+      <ItemsControl ItemsSource="{Binding Candidates}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Border Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="12" Margin="0,4">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="4">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Age, StringFormat='{}{0}岁'}" FontSize="13" Opacity="0.7"/>
+                    <TextBlock Text="{Binding Gender}" FontSize="13" Opacity="0.7"/>
+                    <Border Background="{DynamicResource SystemAccentColor}" CornerRadius="4" Padding="4,2" IsVisible="{Binding IsNew}">
+                      <TextBlock Text="新" FontSize="11" Foreground="White"/>
+                    </Border>
+                  </StackPanel>
+                  <TextBlock Text="{Binding CurrentPosition}" FontSize="13" Opacity="0.8"/>
+                  <TextBlock Text="{Binding CurrentCompany}" FontSize="12" Opacity="0.6"/>
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="{Binding Experience}" FontSize="12" Opacity="0.6"/>
+                    <TextBlock Text="{Binding Education}" FontSize="12" Opacity="0.6"/>
+                    <TextBlock Text="{Binding SalaryExpectation}" FontSize="12" Opacity="0.6"/>
+                    <TextBlock Text="{Binding Location}" FontSize="12" Opacity="0.6"/>
+                  </StackPanel>
+                  <TextBlock Text="{Binding ActiveStatus}" FontSize="11" Opacity="0.5" Foreground="Green"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                  <Button Content="查看简历" Command="{Binding $parent[ItemsControl].((vm:CandidateBrowserViewModel)DataContext).ViewDetailCommand}" CommandParameter="{Binding .}" Padding="8,4"/>
+                  <Button Content="打招呼" Command="{Binding $parent[ItemsControl].((vm:CandidateBrowserViewModel)DataContext).GreetCommand}" CommandParameter="{Binding .}" Padding="8,4"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

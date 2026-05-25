@@ -1,0 +1,37 @@
+{
+    "_doc": "职位管理流程：查看职位状态、浏览投递记录",
+    "CheckJobPosts": {
+        "recognition": "TemplateMatch",
+        "template": "jobs/tab_job_mgmt.png",
+        "action": "Click",
+        "next": ["ReadJobList"]
+    },
+    "ReadJobList": {
+        "recognition": "OCR",
+        "roi": [0, 200, 1080, 1600],
+        "action": "DoNothing",
+        "next": ["CheckComplete"]
+    },
+    "CheckComplete": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": []
+    },
+    "BrowseApplications": {
+        "recognition": "TemplateMatch",
+        "template": "jobs/btn_applications.png",
+        "action": "Click",
+        "next": ["ReadApplicationList"]
+    },
+    "ReadApplicationList": {
+        "recognition": "OCR",
+        "roi": [0, 200, 1080, 1600],
+        "action": "DoNothing",
+        "next": ["BrowseAppComplete"]
+    },
+    "BrowseAppComplete": {
+        "recognition": "DirectHit",
+        "action": "DoNothing",
+        "next": []
+    }
+}
