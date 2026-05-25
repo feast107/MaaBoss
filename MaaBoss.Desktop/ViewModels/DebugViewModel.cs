@@ -69,16 +69,10 @@ public partial class DebugViewModel : ViewModelBase
 
     public (int W, int H) GetControllerResolution() => _controller.Resolution;
 
-    public void UpdateCursorPosition(int imgX, int imgY, int targetX, int targetY, double scaling = 1.0)
+    public void UpdateCursorPosition(int imgX, int imgY, int targetX, int targetY)
     {
         if (imgX < 0)
-        {
             CursorPosText = "鼠标在截图区域内移动以查看坐标";
-            return;
-        }
-
-        if (scaling > 1.0)
-            CursorPosText = $"截图内: ({imgX}, {imgY})  →  窗体: ({targetX}, {targetY})  [DPI: {scaling:F1}x]";
         else
             CursorPosText = $"截图内: ({imgX}, {imgY})  →  窗体: ({targetX}, {targetY})";
     }
