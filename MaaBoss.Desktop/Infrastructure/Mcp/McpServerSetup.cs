@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MaaFramework.Binding;
 using MaaBoss.Desktop.Models;
 using MaaBoss.Desktop.Services;
 
@@ -117,7 +118,8 @@ public static class McpServerSetup
                 "launch_app" => await tasks.LaunchAppAsync(
                     arguments.GetProperty("platform").GetString()!,
                     arguments.TryGetProperty("adb_address", out var adb) && adb.ValueKind != JsonValueKind.Null ? adb.GetString() : null,
-                    arguments.TryGetProperty("wait_ready", out var wr) ? wr.GetBoolean() : true, ct),
+                    arguments.TryGetProperty("wait_ready", out var wr) ? wr.GetBoolean() : true,
+                    Win32ScreencapMethod.DXGI_DesktopDup_Window, ct),
 
                 "browse_candidates" => await tasks.BrowseCandidatesAsync(
                     GetStringOrNull(arguments, "keyword"),

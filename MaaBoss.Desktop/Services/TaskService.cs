@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MaaFramework.Binding;
 using MaaBoss.Desktop.Models;
 
 namespace MaaBoss.Desktop.Services;
@@ -21,12 +22,12 @@ public class TaskService
         _ctrl = ctrl;
     }
 
-    public async Task<ToolResult> LaunchAppAsync(string platform, string? adbAddress, bool waitReady, CancellationToken ct)
+    public async Task<ToolResult> LaunchAppAsync(string platform, string? adbAddress, bool waitReady, Win32ScreencapMethod screencapMethod = Win32ScreencapMethod.DXGI_DesktopDup_Window, CancellationToken ct = default)
     {
         // Win32 模式下默认使用 boss-zhipin.exe 进程名
         string? windowName = platform.ToLowerInvariant() == "win32" ? "boss-zhipin.exe" : null;
 
-        var result = await _ctrl.ConnectAsync(platform, adbAddress, windowName, ct);
+        var result = await _ctrl.ConnectAsync(platform, adbAddress, windowName, screencapMethod, ct);
         if (!result.Success)
             return ToolResult.Err("LAUNCH_FAILED", result.ErrorMessage ?? "连接失败", "请检查客户端是否已安装并处于前台");
 

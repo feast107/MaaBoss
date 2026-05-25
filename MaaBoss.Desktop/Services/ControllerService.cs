@@ -37,6 +37,7 @@ public class ControllerService
         string platform,
         string? adbAddress = null,
         string? windowName = null,
+        Win32ScreencapMethod screencapMethod = Win32ScreencapMethod.DXGI_DesktopDup_Window,
         CancellationToken ct = default)
     {
         await _lock.WaitAsync(ct);
@@ -84,7 +85,8 @@ public class ControllerService
                 }
                 target ??= windows[0];
 
-                controller = target.ToWin32Controller(
+                controller = target.ToWin32ControllerWith(
+                    screencapMethod: screencapMethod,
                     link: LinkOption.Start,
                     check: CheckStatusOption.ThrowIfNotSucceeded);
             }

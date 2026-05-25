@@ -1,10 +1,27 @@
+using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MaaFramework.Binding;
 
 namespace MaaBoss.Desktop.ViewModels;
 
 public partial class SettingsViewModel : ViewModelBase
 {
+    public record ScreencapMethodOption(string Name, Win32ScreencapMethod Value);
+
+    public ObservableCollection<ScreencapMethodOption> ScreencapMethodOptions { get; } = new()
+    {
+        new("DXGI 窗口裁剪 (推荐)", Win32ScreencapMethod.DXGI_DesktopDup_Window),
+        new("DXGI 桌面复制", Win32ScreencapMethod.DXGI_DesktopDup),
+        new("GDI 位图复制", Win32ScreencapMethod.GDI),
+        new("PrintWindow", Win32ScreencapMethod.PrintWindow),
+        new("屏幕 DC", Win32ScreencapMethod.ScreenDC),
+    };
+
+    [ObservableProperty]
+    public partial ScreencapMethodOption SelectedScreencapMethodOption { get; set; } = new("DXGI 窗口裁剪 (推荐)", Win32ScreencapMethod.DXGI_DesktopDup_Window);
+
     [ObservableProperty]
     public partial string Win32WindowName { get; set; } = "boss-zhipin.exe";
 
@@ -38,6 +55,7 @@ public partial class SettingsViewModel : ViewModelBase
     [RelayCommand]
     private void ResetDefaults()
     {
+        SelectedScreencapMethodOption = ScreencapMethodOptions[0];
         Win32WindowName = "boss-zhipin.exe";
         AdbPath = "adb";
         AdbAddress = "127.0.0.1:5555";

@@ -11,6 +11,7 @@ namespace MaaBoss.Desktop.ViewModels;
 public partial class DashboardViewModel : ViewModelBase
 {
     private readonly TaskService _tasks;
+    private readonly SettingsViewModel _settings;
 
     [ObservableProperty]
     public partial bool IsConnected { get; set; }
@@ -30,6 +31,7 @@ public partial class DashboardViewModel : ViewModelBase
     public DashboardViewModel()
     {
         _tasks = ServiceLocator.GetRequiredService<TaskService>();
+        _settings = ServiceLocator.Get<SettingsViewModel>();
     }
 
     [RelayCommand]
@@ -39,7 +41,7 @@ public partial class DashboardViewModel : ViewModelBase
         StatusText = "正在连接 Win32...";
         try
         {
-            var result = await _tasks.LaunchAppAsync("win32", null, true, default);
+            var result = await _tasks.LaunchAppAsync("win32", null, true, _settings.SelectedScreencapMethodOption.Value, default);
             UpdateStatus(result);
         }
         finally { IsBusy = false; }
@@ -52,7 +54,7 @@ public partial class DashboardViewModel : ViewModelBase
         StatusText = "正在连接 ADB...";
         try
         {
-            var result = await _tasks.LaunchAppAsync("adb", "127.0.0.1:5555", true, default);
+            var result = await _tasks.LaunchAppAsync("adb", "127.0.0.1:5555", true, _settings.SelectedScreencapMethodOption.Value, default);
             UpdateStatus(result);
         }
         finally { IsBusy = false; }
