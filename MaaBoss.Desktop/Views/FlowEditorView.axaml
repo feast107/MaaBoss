@@ -1,0 +1,169 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:MaaBoss.Desktop.ViewModels"
+             xmlns:models="using:MaaBoss.Desktop.Models"
+             xmlns:conv="using:MaaBoss.Desktop.Infrastructure.Converters"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+             x:Class="MaaBoss.Desktop.Views.FlowEditorView"
+             x:DataType="vm:FlowEditorViewModel">
+
+  <UserControl.Resources>
+    <conv:EnumEqualsConverter x:Key="EnumEquals"/>
+  </UserControl.Resources>
+
+  <Grid ColumnDefinitions="300,*,200" RowDefinitions="Auto,*">
+    <!-- 顶部工具栏 -->
+    <StackPanel Grid.ColumnSpan="3" Orientation="Horizontal" Spacing="8" Margin="0,0,0,12">
+      <TextBlock Text="流程编辑" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,16,0"/>
+      <TextBox Text="{Binding FlowName}" Watermark="流程名称" Width="200" VerticalAlignment="Center"/>
+      <Button Content="保存" Command="{Binding SaveFlowCommand}" VerticalAlignment="Center" Padding="12,4"/>
+      <Button Content="加载" Command="{Binding LoadFlowCommand}" VerticalAlignment="Center" Padding="12,4"/>
+      <Button Content="执行" Command="{Binding RunFlowCommand}" IsVisible="{Binding !IsRunning}" VerticalAlignment="Center" Padding="16,4" Background="{DynamicResource SystemAccentColor}" Foreground="White"/>
+      <Button Content="停止" Command="{Binding StopFlowCommand}" IsVisible="{Binding IsRunning}" VerticalAlignment="Center" Padding="16,4"/>
+      <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" Opacity="0.7" Margin="8,0,0,0"/>
+    </StackPanel>
+
+    <!-- 左侧：步骤列表 -->
+    <StackPanel Grid.Row="1" Grid.Column="0" Spacing="8" Margin="0,0,16,0">
+      <TextBlock Text="步骤列表" FontSize="16" FontWeight="SemiBold"/>
+      <ListBox ItemsSource="{Binding Steps}" SelectedItem="{Binding SelectedStep}" Height="500">
+        <ListBox.ItemTemplate>
+          <DataTemplate DataType="models:FlowStep">
+            <StackPanel>
+              <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+              <TextBlock Text="{Binding Action}" FontSize="11" Opacity="0.6"/>
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      <StackPanel Orientation="Horizontal" Spacing="4">
+        <Button Content="上移" Command="{Binding MoveUpCommand}" Padding="8,2"/>
+        <Button Content="下移" Command="{Binding MoveDownCommand}" Padding="8,2"/>
+        <Button Content="删除" Command="{Binding RemoveStepCommand}" Padding="8,2"/>
+      </StackPanel>
+      <StackPanel Spacing="4">
+        <TextBlock Text="添加步骤" FontSize="12" FontWeight="SemiBold"/>
+        <WrapPanel>
+          <Button Content="+点击" Command="{Binding AddStepCommand}" CommandParameter="{x:Static models:FlowActionType.Click}" Padding="8,2" Margin="0,0,4,4"/>
+          <Button Content="+滑动" Command="{Binding AddStepCommand}" CommandParameter="{x:Static models:FlowActionType.Swipe}" Padding="8,2" Margin="0,0,4,4"/>
+          <Button Content="+等待" Command="{Binding AddStepCommand}" CommandParameter="{x:Static models:FlowActionType.Wait}" Padding="8,2" Margin="0,0,4,4"/>
+          <Button Content="+延时" Command="{Binding AddStepCommand}" CommandParameter="{x:Static models:FlowActionType.Delay}" Padding="8,2" Margin="0,0,4,4"/>
+          <Button Content="+截图" Command="{Binding AddStepCommand}" CommandParameter="{x:Static models:FlowActionType.Screenshot}" Padding="8,2" Margin="0,0,4,4"/>
+          <Button Content="+Pipeline" Command="{Binding AddStepCommand}" CommandParameter="{x:Static models:FlowActionType.Pipeline}" Padding="8,2" Margin="0,0,4,4"/>
+        </WrapPanel>
+      </StackPanel>
+    </StackPanel>
+
+    <!-- 中间：步骤编辑 -->
+    <Border Grid.Row="1" Grid.Column="1" Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="16">
+      <StackPanel Spacing="12">
+        <TextBlock Text="步骤属性" FontSize="16" FontWeight="SemiBold"/>
+
+        <Panel IsVisible="{Binding SelectedStep, Converter={x:Static ObjectConverters.IsNull}}">
+          <TextBlock Text="请选择一个步骤进行编辑" Opacity="0.5" HorizontalAlignment="Center"/>
+        </Panel>
+
+        <StackPanel Spacing="8" IsVisible="{Binding SelectedStep, Converter={x:Static ObjectConverters.IsNotNull}}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="名称" Width="60" VerticalAlignment="Center"/>
+            <TextBox Text="{Binding SelectedStep.Name}" Watermark="步骤名称" Width="200"/>
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="类型" Width="60" VerticalAlignment="Center"/>
+            <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.ActionTypes}" SelectedItem="{Binding SelectedStep.Action}" Width="200"/>
+          </StackPanel>
+
+          <!-- Click 坐标 -->
+          <StackPanel Spacing="8"
+                      IsVisible="{Binding SelectedStep.Action, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowActionType.Click}}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="X" Width="60" VerticalAlignment="Center"/>
+              <NumericUpDown Value="{Binding SelectedStep.X}" Minimum="0" Maximum="9999" Width="120"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="Y" Width="60" VerticalAlignment="Center"/>
+              <NumericUpDown Value="{Binding SelectedStep.Y}" Minimum="0" Maximum="9999" Width="120"/>
+            </StackPanel>
+          </StackPanel>
+
+          <!-- Swipe 坐标 -->
+          <StackPanel Spacing="8"
+                      IsVisible="{Binding SelectedStep.Action, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowActionType.Swipe}}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="起点 X" Width="60" VerticalAlignment="Center"/>
+              <NumericUpDown Value="{Binding SelectedStep.X}" Minimum="0" Maximum="9999" Width="120"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="起点 Y" Width="60" VerticalAlignment="Center"/>
+              <NumericUpDown Value="{Binding SelectedStep.Y}" Minimum="0" Maximum="9999" Width="120"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="终点 X" Width="60" VerticalAlignment="Center"/>
+              <NumericUpDown Value="{Binding SelectedStep.X2}" Minimum="0" Maximum="9999" Width="120"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="终点 Y" Width="60" VerticalAlignment="Center"/>
+              <NumericUpDown Value="{Binding SelectedStep.Y2}" Minimum="0" Maximum="9999" Width="120"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="耗时(ms)" Width="60" VerticalAlignment="Center"/>
+              <NumericUpDown Value="{Binding SelectedStep.DurationMs}" Minimum="0" Maximum="60000" Width="120"/>
+            </StackPanel>
+          </StackPanel>
+
+          <!-- Wait / Delay -->
+          <StackPanel Spacing="8"
+                      IsVisible="{Binding SelectedStep.Action, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowActionType.Wait}}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="时长(ms)" Width="60" VerticalAlignment="Center"/>
+              <NumericUpDown Value="{Binding SelectedStep.DurationMs}" Minimum="0" Maximum="600000" Width="120"/>
+            </StackPanel>
+          </StackPanel>
+          <StackPanel Spacing="8"
+                      IsVisible="{Binding SelectedStep.Action, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowActionType.Delay}}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="时长(ms)" Width="60" VerticalAlignment="Center"/>
+              <NumericUpDown Value="{Binding SelectedStep.DurationMs}" Minimum="0" Maximum="600000" Width="120"/>
+            </StackPanel>
+          </StackPanel>
+
+          <!-- InputText -->
+          <StackPanel Spacing="8"
+                      IsVisible="{Binding SelectedStep.Action, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowActionType.InputText}}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="文本" Width="60" VerticalAlignment="Center"/>
+              <TextBox Text="{Binding SelectedStep.Text}" Watermark="输入内容" Width="300"/>
+            </StackPanel>
+          </StackPanel>
+
+          <!-- Pipeline -->
+          <StackPanel Spacing="8"
+                      IsVisible="{Binding SelectedStep.Action, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowActionType.Pipeline}}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="Pipeline" Width="60" VerticalAlignment="Center"/>
+              <TextBox Text="{Binding SelectedStep.PipelineName}" Watermark="Pipeline 名称" Width="200"/>
+            </StackPanel>
+          </StackPanel>
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!-- 右侧：帮助 -->
+    <StackPanel Grid.Row="1" Grid.Column="2" Spacing="8" Margin="16,0,0,0">
+      <TextBlock Text="操作说明" FontSize="16" FontWeight="SemiBold"/>
+      <Border Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="12">
+        <StackPanel Spacing="4">
+          <TextBlock Text="点击: 在指定坐标执行点击" FontSize="12" TextWrapping="Wrap"/>
+          <TextBlock Text="滑动: 从 (X,Y) 滑动到 (X2,Y2)" FontSize="12" TextWrapping="Wrap"/>
+          <TextBlock Text="等待: 阻塞等待指定毫秒" FontSize="12" TextWrapping="Wrap"/>
+          <TextBlock Text="延时: 同等待，用于区分语义" FontSize="12" TextWrapping="Wrap"/>
+          <TextBlock Text="截图: 保存当前画面" FontSize="12" TextWrapping="Wrap"/>
+          <TextBlock Text="Pipeline: 执行指定 Pipeline" FontSize="12" TextWrapping="Wrap"/>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </Grid>
+</UserControl>

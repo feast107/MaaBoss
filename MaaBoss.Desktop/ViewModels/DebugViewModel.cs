@@ -1,11 +1,16 @@
 using System;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using MaaBoss.Desktop.Messaging;
+using MaaBoss.Desktop.Models;
 using MaaBoss.Desktop.Services;
 
 namespace MaaBoss.Desktop.ViewModels;
@@ -14,24 +19,6 @@ public partial class DebugViewModel : ViewModelBase
 {
     [ObservableProperty]
     public partial Bitmap? Screenshot { get; set; }
-
-    [ObservableProperty]
-    public partial string ClickX { get; set; } = "960";
-
-    [ObservableProperty]
-    public partial string ClickY { get; set; } = "540";
-
-    [ObservableProperty]
-    public partial string SwipeX1 { get; set; } = "960";
-
-    [ObservableProperty]
-    public partial string SwipeY1 { get; set; } = "800";
-
-    [ObservableProperty]
-    public partial string SwipeX2 { get; set; } = "960";
-
-    [ObservableProperty]
-    public partial string SwipeY2 { get; set; } = "300";
 
     [ObservableProperty]
     public partial string PipelineName { get; set; } = "Startup";
@@ -51,8 +38,28 @@ public partial class DebugViewModel : ViewModelBase
     [ObservableProperty]
     public partial string DiagnosticText { get; set; } = "";
 
+    // 日志折叠
+    [ObservableProperty]
+    public partial bool IsLogExpanded { get; set; } = true;
+
+    // 流程编辑
+    [ObservableProperty]
+    public partial ObservableCollection<FlowStep> Steps { get; set; } = new();
+
+    [ObservableProperty]
+    public partial FlowStep? SelectedStep { get; set; }
+
+    [ObservableProperty]
+    public partial bool IsFlowRunning { get; set; }
+
+    [ObservableProperty]
+    public partial string FlowName { get; set; } = "未命名流程";
+
+    public FlowActionType[] ActionTypes { get; } = Enum.GetValues<FlowActionType>();
+
     private readonly ControllerService _controller;
     private readonly LogService _log;
+    private CancellationTokenSource? _flowCts;
 
     public DebugViewModel()
     {
@@ -100,6 +107,8 @@ public partial class DebugViewModel : ViewModelBase
             CursorPosText = $"截图内: ({imgX}, {imgY})  [控件: {pctX:P1}, {pctY:P1}]  →  目标: ({targetX}, {targetY})";
     }
 
+    #region Screenshot & Debug
+
     [RelayCommand]
     private async Task TakeScreenshotAsync()
     {
@@ -135,8 +144,6 @@ public partial class DebugViewModel : ViewModelBase
     public async Task ClickAtAsync(int x, int y)
     {
         IsBusy = true;
-        ClickX = x.ToString();
-        ClickY = y.ToString();
         _log.Info($"截图点击坐标: ({x}, {y})");
         try
         {
@@ -146,32 +153,6 @@ public partial class DebugViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Error($"点击异常: {ex.Message}");
-        }
-        IsBusy = false;
-    }
-
-    [RelayCommand]
-    private async Task ClickAsync()
-    {
-        if (!int.TryParse(ClickX, out var x) || !int.TryParse(ClickY, out var y)) return;
-        await ClickAtAsync(x, y);
-    }
-
-    [RelayCommand]
-    private async Task SwipeAsync()
-    {
-        if (!int.TryParse(SwipeX1, out var x1) || !int.TryParse(SwipeY1, out var y1) ||
-            !int.TryParse(SwipeX2, out var x2) || !int.TryParse(SwipeY2, out var y2)) return;
-        IsBusy = true;
-        _log.Info($"滑动: ({x1},{y1}) -> ({x2},{y2})");
-        try
-        {
-            var result = await _controller.SwipeAsync(x1, y1, x2, y2, 500);
-            _log.Info(result.Success ? "滑动成功" : "滑动失败");
-        }
-        catch (Exception ex)
-        {
-            _log.Error($"滑动异常: {ex.Message}");
         }
         IsBusy = false;
     }
@@ -215,4 +196,185 @@ public partial class DebugViewModel : ViewModelBase
     {
         _log.Clear();
     }
+
+    #endregion
+
+    #region Flow Editor
+
+    [RelayCommand]
+    private void AddStep(FlowActionType? actionType)
+    {
+        var type = actionType ?? FlowActionType.Click;
+        var step = new FlowStep
+        {
+            Action = type,
+            Name = type switch
+            {
+                FlowActionType.Click => "点击",
+                FlowActionType.Swipe => "滑动",
+                FlowActionType.Wait => "等待",
+                FlowActionType.InputText => "输入文本",
+                FlowActionType.Screenshot => "截图",
+                FlowActionType.Pipeline => "执行 Pipeline",
+                FlowActionType.Delay => "延时",
+                _ => "步骤"
+            }
+        };
+        Steps.Add(step);
+        SelectedStep = step;
+    }
+
+    [RelayCommand]
+    private void RemoveStep()
+    {
+        if (SelectedStep == null) return;
+        Steps.Remove(SelectedStep);
+        SelectedStep = Steps.LastOrDefault();
+    }
+
+    [RelayCommand]
+    private void MoveUp()
+    {
+        if (SelectedStep == null) return;
+        var idx = Steps.IndexOf(SelectedStep);
+        if (idx <= 0) return;
+        Steps.Move(idx, idx - 1);
+    }
+
+    [RelayCommand]
+    private void MoveDown()
+    {
+        if (SelectedStep == null) return;
+        var idx = Steps.IndexOf(SelectedStep);
+        if (idx < 0 || idx >= Steps.Count - 1) return;
+        Steps.Move(idx, idx + 1);
+    }
+
+    [RelayCommand]
+    private async Task RunFlowAsync()
+    {
+        if (Steps.Count == 0)
+        {
+            _log.Warn("流程为空，无法执行");
+            return;
+        }
+
+        IsFlowRunning = true;
+        _flowCts = new CancellationTokenSource();
+        var ct = _flowCts.Token;
+
+        try
+        {
+            for (int i = 0; i < Steps.Count; i++)
+            {
+                if (ct.IsCancellationRequested) break;
+                var step = Steps[i];
+                _log.Info($"流程 [{i + 1}/{Steps.Count}]: {step.Name} ({step.Action})");
+                await ExecuteFlowStepAsync(step, ct);
+            }
+            _log.Info("流程执行完成");
+        }
+        catch (OperationCanceledException)
+        {
+            _log.Info("流程已取消");
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"流程执行异常: {ex.Message}");
+        }
+        finally
+        {
+            IsFlowRunning = false;
+            _flowCts = null;
+        }
+    }
+
+    [RelayCommand]
+    private void StopFlow()
+    {
+        _flowCts?.Cancel();
+        _log.Info("正在取消流程...");
+    }
+
+    private async Task ExecuteFlowStepAsync(FlowStep step, CancellationToken ct)
+    {
+        switch (step.Action)
+        {
+            case FlowActionType.Click:
+                await _controller.ClickAsync(step.X, step.Y, ct);
+                break;
+            case FlowActionType.Swipe:
+                await _controller.SwipeAsync(step.X, step.Y, step.X2, step.Y2, step.DurationMs, ct);
+                break;
+            case FlowActionType.Wait:
+            case FlowActionType.Delay:
+                await Task.Delay(step.DurationMs, ct);
+                break;
+            case FlowActionType.InputText:
+                _log.Warn("输入文本功能暂不支持");
+                break;
+            case FlowActionType.Screenshot:
+                var path = Path.Combine(AppContext.BaseDirectory, "screenshots", $"flow_{DateTime.Now:HHmmss}.png");
+                await _controller.ScreenshotAsync(path, ct);
+                break;
+            case FlowActionType.Pipeline:
+                if (!string.IsNullOrWhiteSpace(step.PipelineName))
+                    await _controller.RunPipelineAsync(step.PipelineName, null, ct);
+                break;
+            default:
+                _log.Warn($"未知操作类型: {step.Action}");
+                break;
+        }
+    }
+
+    [RelayCommand]
+    private void SaveFlow()
+    {
+        try
+        {
+            var dto = new FlowDto(FlowName, Steps.ToList());
+            var json = JsonSerializer.Serialize(dto, new JsonSerializerOptions { WriteIndented = true });
+            var dir = Path.Combine(AppContext.BaseDirectory, "flows");
+            Directory.CreateDirectory(dir);
+            var path = Path.Combine(dir, $"{FlowName}.json");
+            File.WriteAllText(path, json);
+            _log.Info($"流程已保存: {path}");
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"保存流程失败: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private void LoadFlow()
+    {
+        try
+        {
+            var dir = Path.Combine(AppContext.BaseDirectory, "flows");
+            if (!Directory.Exists(dir)) return;
+            var files = Directory.GetFiles(dir, "*.json");
+            if (files.Length == 0)
+            {
+                _log.Warn("没有找到流程文件");
+                return;
+            }
+            var path = files[0];
+            var json = File.ReadAllText(path);
+            var dto = JsonSerializer.Deserialize<FlowDto>(json);
+            if (dto == null) return;
+            FlowName = dto.Name;
+            Steps = new ObservableCollection<FlowStep>(dto.Steps);
+            SelectedStep = Steps.FirstOrDefault();
+            _log.Info($"流程已加载: {path}");
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"加载流程失败: {ex.Message}");
+        }
+    }
+
+    private record FlowDto(string Name, System.Collections.Generic.List<FlowStep> Steps);
+
+    #endregion
 }

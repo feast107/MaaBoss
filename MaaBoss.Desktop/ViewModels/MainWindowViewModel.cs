@@ -24,6 +24,7 @@ public partial class MainWindowViewModel : ViewModelBase
         navService.RegisterViewModel("Candidates", () => new CandidateBrowserViewModel());
         navService.RegisterViewModel("Chat", () => new ChatViewModel());
         navService.RegisterViewModel("Debug", () => new DebugViewModel());
+        navService.RegisterViewModel("FlowEditor", () => new FlowEditorViewModel());
         navService.RegisterViewModel("Settings", () => ServiceLocator.Get<SettingsViewModel>());
 
         // 导航项列表
@@ -31,6 +32,7 @@ public partial class MainWindowViewModel : ViewModelBase
         NavigationItems.Add(new NavItem("候选人", "Candidates"));
         NavigationItems.Add(new NavItem("消息", "Chat"));
         NavigationItems.Add(new NavItem("调试", "Debug"));
+        NavigationItems.Add(new NavItem("流程", "FlowEditor"));
         NavigationItems.Add(new NavItem("设置", "Settings"));
 
         // 默认首页
