@@ -39,14 +39,12 @@
 ┌──────────────────────▼─────────────────────────┐
 │  Layer 1: Controller Abstraction               │
 │  • Win32 Controller (SendMessage / BitBlt)     │
-│  • ADB Controller (shell input / screencap)    │
 │  • Screenshot / Click / Swipe / InputText      │
 └──────────────────────┬─────────────────────────┘
                        │
 ┌──────────────────────▼─────────────────────────┐
 │  Layer 0: Target Application                   │
 │  • Boss 直聘招聘端 PC 客户端 (Win32)            │
-│  • Boss 直聘招聘端 Android APP (Emulator)      │
 └────────────────────────────────────────────────┘
 ```
 
@@ -186,7 +184,7 @@ MCP Server 为无状态设计，所有上下文由 Agent 维护。
 
 ### 5.2 支持新平台
 
-MaaFramework 已内置 Win32 / ADB 支持。若需扩展：
+MaaFramework 已内置 Win32 支持。若需扩展：
 1. 在 `IMaaController` 接口中增加新方法
 2. 在 `MaaControllerMock` 和真实实现中实现
 
@@ -201,7 +199,7 @@ MaaFramework 已内置 Win32 / ADB 支持。若需扩展：
 | 场景 | 策略 |
 |------|------|
 | 元素识别失败 | 重试 3 次，每次间隔 `rate_limit`，最终走 `on_error` |
-| 连接断开 | Win32 自动恢复，ADB 重新连接 |
+| 连接断开 | Win32 自动恢复 |
 | 沟通上限 | 返回 `GREET_LIMIT` 错误，提示用户 |
 | UI 版本不兼容 | 返回 `ELEMENT_NOT_FOUND`，需更新模板图 |
 | 弹窗干扰 | Pipeline 中插入 `Interrupt` 节点处理常见弹窗 |

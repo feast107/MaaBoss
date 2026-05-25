@@ -89,7 +89,7 @@ public static class McpServerSetup
     {
         return
         [
-            new { name = "launch_app", description = "启动或连接到 Boss 直聘招聘端客户端", inputSchema = new { type = "object", properties = new { platform = new { type = "string", @enum = new[] { "win32", "adb" } }, adb_address = new { type = new[] { "string", "null" } }, wait_ready = new { type = "boolean", @default = true } }, required = new[] { "platform" } } },
+            new { name = "launch_app", description = "启动或连接到 Boss 直聘招聘端客户端", inputSchema = new { type = "object", properties = new { window_name = new { type = new[] { "string", "null" }, @default = "BOSS直聘" }, wait_ready = new { type = "boolean", @default = true } } } },
             new { name = "browse_candidates", description = "浏览候选人列表", inputSchema = new { type = "object", properties = new { keyword = new { type = new[] { "string", "null" } }, experience = new { type = new[] { "string", "null" } }, education = new { type = new[] { "string", "null" } }, salary_expectation = new { type = new[] { "string", "null" } }, max_pages = new { type = "integer", @default = 3 }, list_type = new { type = "string", @default = "recommend" } } } },
             new { name = "swipe_candidates", description = "滑动浏览候选人", inputSchema = new { type = "object", properties = new { direction = new { type = "string", @default = "down" }, count = new { type = "integer", @default = 5 }, interval_ms = new { type = "integer", @default = 1500 } } } },
             new { name = "view_candidate_detail", description = "查看候选人详细简历", inputSchema = new { type = "object", properties = new { candidate_name = new { type = new[] { "string", "null" } }, extract_info = new { type = "boolean", @default = true } } } },
@@ -116,8 +116,6 @@ public static class McpServerSetup
             ToolResult result = name switch
             {
                 "launch_app" => await tasks.LaunchAppAsync(
-                    arguments.GetProperty("platform").GetString()!,
-                    arguments.TryGetProperty("adb_address", out var adb) && adb.ValueKind != JsonValueKind.Null ? adb.GetString() : null,
                     arguments.TryGetProperty("wait_ready", out var wr) ? wr.GetBoolean() : true,
                     Win32ScreencapMethod.DXGI_DesktopDup_Window,
                     Win32InputMethod.SendMessageWithCursorPos,

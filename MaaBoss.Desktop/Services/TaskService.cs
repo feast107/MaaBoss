@@ -23,18 +23,17 @@ public class TaskService
     }
 
     public async Task<ToolResult> LaunchAppAsync(
-        string platform, string? adbAddress, bool waitReady,
+        bool waitReady,
         Win32ScreencapMethod screencapMethod = Win32ScreencapMethod.DXGI_DesktopDup_Window,
         Win32InputMethod mouseMethod = Win32InputMethod.SendMessageWithCursorPos,
         Win32InputMethod keyboardMethod = Win32InputMethod.PostMessage,
         string? windowName = null,
         CancellationToken ct = default)
     {
-        // Win32 模式下若未指定窗口名，使用默认
-        if (platform.ToLowerInvariant() == "win32" && string.IsNullOrWhiteSpace(windowName))
+        if (string.IsNullOrWhiteSpace(windowName))
             windowName = "BOSS直聘";
 
-        var result = await _ctrl.ConnectAsync(platform, adbAddress, windowName, screencapMethod, mouseMethod, keyboardMethod, ct);
+        var result = await _ctrl.ConnectAsync(windowName, screencapMethod, mouseMethod, keyboardMethod, ct);
         if (!result.Success)
             return ToolResult.Err("LAUNCH_FAILED", result.ErrorMessage ?? "连接失败", "请检查客户端是否已安装并处于前台");
 

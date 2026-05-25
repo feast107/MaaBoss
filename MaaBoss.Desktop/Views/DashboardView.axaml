@@ -23,8 +23,7 @@
               </StackPanel>
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
-              <Button Content="连接 Win32" Command="{Binding ConnectWin32Command}" IsEnabled="{Binding !IsBusy}"/>
-              <Button Content="连接 ADB" Command="{Binding ConnectAdbCommand}" IsEnabled="{Binding !IsBusy}"/>
+              <Button Content="连接" Command="{Binding ConnectWin32Command}" IsEnabled="{Binding !IsBusy}"/>
               <Button Content="断开" Command="{Binding DisconnectCommand}" IsEnabled="{Binding IsConnected}"/>
             </StackPanel>
           </Grid>

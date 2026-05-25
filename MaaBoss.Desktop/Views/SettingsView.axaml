@@ -27,16 +27,8 @@
             <TextBlock Text="修改后需重新连接生效" FontSize="12" Opacity="0.5"/>
           </StackPanel>
           <StackPanel Spacing="8">
-            <TextBlock Text="Win32 窗口名称" Opacity="0.7"/>
+            <TextBlock Text="窗口名称" Opacity="0.7"/>
             <TextBox Text="{Binding Win32WindowName}" Watermark="BOSS直聘"/>
-          </StackPanel>
-          <StackPanel Spacing="8">
-            <TextBlock Text="ADB 路径" Opacity="0.7"/>
-            <TextBox Text="{Binding AdbPath}" Watermark="adb"/>
-          </StackPanel>
-          <StackPanel Spacing="8">
-            <TextBlock Text="ADB 设备地址" Opacity="0.7"/>
-            <TextBox Text="{Binding AdbAddress}" Watermark="127.0.0.1:5555"/>
           </StackPanel>
         </StackPanel>
       </Border>

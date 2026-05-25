@@ -32,12 +32,6 @@ public partial class SettingsViewModel : ViewModelBase
     public partial string Win32WindowName { get; set; } = "BOSS直聘";
 
     [ObservableProperty]
-    public partial string AdbPath { get; set; } = "adb";
-
-    [ObservableProperty]
-    public partial string AdbAddress { get; set; } = "127.0.0.1:5555";
-
-    [ObservableProperty]
     public partial int RateLimitMs { get; set; } = 1000;
 
     [ObservableProperty]
@@ -63,8 +57,6 @@ public partial class SettingsViewModel : ViewModelBase
     {
         SelectedControllerPreset = ControllerPresets[0];
         Win32WindowName = "BOSS直聘";
-        AdbPath = "adb";
-        AdbAddress = "127.0.0.1:5555";
         RateLimitMs = 1000;
         TimeoutMs = 20000;
         DailyGreetLimit = 100;

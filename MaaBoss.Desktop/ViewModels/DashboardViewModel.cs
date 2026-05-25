@@ -42,21 +42,7 @@ public partial class DashboardViewModel : ViewModelBase
         try
         {
             var preset = _settings.SelectedControllerPreset;
-            var result = await _tasks.LaunchAppAsync("win32", null, true, preset.Screencap, preset.Mouse, preset.Keyboard, _settings.Win32WindowName, default);
-            UpdateStatus(result);
-        }
-        finally { IsBusy = false; }
-    }
-
-    [RelayCommand]
-    private async Task ConnectAdbAsync()
-    {
-        IsBusy = true;
-        StatusText = "正在连接 ADB...";
-        try
-        {
-            var preset = _settings.SelectedControllerPreset;
-            var result = await _tasks.LaunchAppAsync("adb", "127.0.0.1:5555", true, preset.Screencap, preset.Mouse, preset.Keyboard, default);
+            var result = await _tasks.LaunchAppAsync(true, preset.Screencap, preset.Mouse, preset.Keyboard, _settings.Win32WindowName, default);
             UpdateStatus(result);
         }
         finally { IsBusy = false; }

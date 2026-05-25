@@ -16,8 +16,7 @@ MaaBoss 启动后，MCP Server 在 `http://localhost:5000` 提供 SSE 接入。
 
 | 字段 | 类型 | 必填 | 默认值 | 说明 |
 |------|------|------|--------|------|
-| `platform` | string | 是 | - | `win32` 或 `adb` |
-| `adb_address` | string/null | 否 | null | ADB 设备地址，adb 模式下必填 |
+| `window_name` | string/null | 否 | "BOSS直聘" | 目标窗口名称 |
 | `wait_ready` | boolean | 否 | true | 是否等待应用完全加载 |
 
 **返回值：**

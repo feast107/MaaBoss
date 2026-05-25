@@ -88,8 +88,6 @@ public class ControllerService
     /// Win32 模式下会先查找/启动目标进程。
     /// </summary>
     public async Task<ConnectResult> ConnectAsync(
-        string platform,
-        string? adbAddress = null,
         string? windowName = null,
         Win32ScreencapMethod screencapMethod = Win32ScreencapMethod.DXGI_DesktopDup_Window,
         Win32InputMethod mouseMethod = Win32InputMethod.SendMessageWithCursorPos,
@@ -109,49 +107,33 @@ public class ControllerService
             Directory.CreateDirectory(pluginDir);
             MaaToolkit.Shared.Config.InitOption(userPath);
 
-            MaaController controller;
+            var windows = MaaToolkit.Shared.Desktop.Window.Find();
+            if (windows.IsEmpty)
+                return new ConnectResult(false, "win32", "-", "未找到目标窗口");
 
-            if (platform.ToLowerInvariant() == "adb")
+            DesktopWindowInfo? target = null;
+            var searchName = windowName ?? "BOSS直聘";
+            foreach (var win in windows)
             {
-                var devices = MaaToolkit.Shared.AdbDevice.Find();
-                if (devices.IsEmpty)
-                    return new ConnectResult(false, "adb", "-", "未找到 ADB 设备");
-
-                var device = devices[0];
-                controller = device.ToAdbControllerWith(
-                    link: LinkOption.Start,
-                    check: CheckStatusOption.ThrowIfNotSucceeded);
-            }
-            else
-            {
-                var windows = MaaToolkit.Shared.Desktop.Window.Find();
-                if (windows.IsEmpty)
-                    return new ConnectResult(false, "win32", "-", "未找到目标窗口");
-
-                DesktopWindowInfo? target = null;
-                var searchName = windowName ?? "BOSS直聘";
-                foreach (var win in windows)
+                if (win.Name.Contains(searchName, StringComparison.OrdinalIgnoreCase) ||
+                    win.ClassName.Contains(searchName, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (win.Name.Contains(searchName, StringComparison.OrdinalIgnoreCase) ||
-                        win.ClassName.Contains(searchName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        target = win;
-                        break;
-                    }
+                    target = win;
+                    break;
                 }
-                target ??= windows[0];
-
-                TargetHwnd = target.Handle;
-                CurrentMouseMethod = mouseMethod;
-                CurrentScreencapMethod = screencapMethod;
-
-                controller = target.ToWin32ControllerWith(
-                    screencapMethod: screencapMethod,
-                    mouseMethod: mouseMethod,
-                    keyboardMethod: keyboardMethod,
-                    link: LinkOption.Start,
-                    check: CheckStatusOption.ThrowIfNotSucceeded);
             }
+            target ??= windows[0];
+
+            TargetHwnd = target.Handle;
+            CurrentMouseMethod = mouseMethod;
+            CurrentScreencapMethod = screencapMethod;
+
+            var controller = target.ToWin32ControllerWith(
+                screencapMethod: screencapMethod,
+                mouseMethod: mouseMethod,
+                keyboardMethod: keyboardMethod,
+                link: LinkOption.Start,
+                check: CheckStatusOption.ThrowIfNotSucceeded);
 
             var resourcePath = Path.Combine(AppContext.BaseDirectory, "assets", "pipeline");
             var resource = new MaaResource(
@@ -166,19 +148,19 @@ public class ControllerService
             };
 
             if (!_tasker.IsInitialized)
-                return new ConnectResult(false, platform, "-", "MaaTasker 初始化失败");
+                return new ConnectResult(false, "win32", "-", "MaaTasker 初始化失败");
 
             // 获取分辨率
             var scJob = controller.Screencap();
             scJob.Wait().ThrowIfNot(MaaJobStatus.Succeeded);
             _tasker.Controller.GetResolution(out var rw, out var rh);
 
-            return new ConnectResult(true, platform, $"{rw}x{rh}");
+            return new ConnectResult(true, "win32", $"{rw}x{rh}");
         }
         catch (Exception ex)
         {
             DisconnectCore();
-            return new ConnectResult(false, platform, "-", ex.Message);
+            return new ConnectResult(false, "win32", "-", ex.Message);
         }
         finally
         {
