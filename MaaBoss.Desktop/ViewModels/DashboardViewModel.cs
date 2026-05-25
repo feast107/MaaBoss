@@ -42,7 +42,7 @@ public partial class DashboardViewModel : ViewModelBase
         try
         {
             var preset = _settings.SelectedControllerPreset;
-            var result = await _tasks.LaunchAppAsync("win32", null, true, preset.Screencap, preset.Mouse, preset.Keyboard, default);
+            var result = await _tasks.LaunchAppAsync("win32", null, true, preset.Screencap, preset.Mouse, preset.Keyboard, _settings.Win32WindowName, default);
             UpdateStatus(result);
         }
         finally { IsBusy = false; }

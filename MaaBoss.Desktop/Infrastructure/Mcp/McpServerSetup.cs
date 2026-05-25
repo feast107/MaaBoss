@@ -121,7 +121,9 @@ public static class McpServerSetup
                     arguments.TryGetProperty("wait_ready", out var wr) ? wr.GetBoolean() : true,
                     Win32ScreencapMethod.DXGI_DesktopDup_Window,
                     Win32InputMethod.SendMessageWithCursorPos,
-                    Win32InputMethod.PostMessage, ct),
+                    Win32InputMethod.PostMessage,
+                    arguments.TryGetProperty("window_name", out var wn) && wn.ValueKind != JsonValueKind.Null ? wn.GetString() : null,
+                    ct),
 
                 "browse_candidates" => await tasks.BrowseCandidatesAsync(
                     GetStringOrNull(arguments, "keyword"),

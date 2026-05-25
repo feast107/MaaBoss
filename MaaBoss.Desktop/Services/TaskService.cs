@@ -27,10 +27,12 @@ public class TaskService
         Win32ScreencapMethod screencapMethod = Win32ScreencapMethod.DXGI_DesktopDup_Window,
         Win32InputMethod mouseMethod = Win32InputMethod.SendMessageWithCursorPos,
         Win32InputMethod keyboardMethod = Win32InputMethod.PostMessage,
+        string? windowName = null,
         CancellationToken ct = default)
     {
-        // Win32 模式下默认使用 BOSS直聘 进程名
-        string? windowName = platform.ToLowerInvariant() == "win32" ? "BOSS直聘" : null;
+        // Win32 模式下若未指定窗口名，使用默认
+        if (platform.ToLowerInvariant() == "win32" && string.IsNullOrWhiteSpace(windowName))
+            windowName = "BOSS直聘";
 
         var result = await _ctrl.ConnectAsync(platform, adbAddress, windowName, screencapMethod, mouseMethod, keyboardMethod, ct);
         if (!result.Success)

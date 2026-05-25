@@ -29,7 +29,7 @@ public partial class SettingsViewModel : ViewModelBase
         "后台窗口 (DXGI)", Win32ScreencapMethod.DXGI_DesktopDup_Window, Win32InputMethod.SendMessageWithCursorPos, Win32InputMethod.PostMessage);
 
     [ObservableProperty]
-    public partial string Win32WindowName { get; set; } = "boss-zhipin.exe";
+    public partial string Win32WindowName { get; set; } = "BOSS直聘";
 
     [ObservableProperty]
     public partial string AdbPath { get; set; } = "adb";
@@ -62,7 +62,7 @@ public partial class SettingsViewModel : ViewModelBase
     private void ResetDefaults()
     {
         SelectedControllerPreset = ControllerPresets[0];
-        Win32WindowName = "boss-zhipin.exe";
+        Win32WindowName = "BOSS直聘";
         AdbPath = "adb";
         AdbAddress = "127.0.0.1:5555";
         RateLimitMs = 1000;
