@@ -45,6 +45,9 @@ public partial class DebugViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool IsConnected { get; set; }
 
+    [ObservableProperty]
+    public partial string CursorPosText { get; set; } = "鼠标在截图区域内移动以查看坐标";
+
     private readonly ControllerService _controller;
     private readonly LogService _log;
 
@@ -62,6 +65,16 @@ public partial class DebugViewModel : ViewModelBase
         {
             LogText = msg.Value;
         });
+    }
+
+    public (int W, int H) GetControllerResolution() => _controller.Resolution;
+
+    public void UpdateCursorPosition(int imgX, int imgY, int targetX, int targetY)
+    {
+        if (imgX < 0)
+            CursorPosText = "鼠标在截图区域内移动以查看坐标";
+        else
+            CursorPosText = $"截图内: ({imgX}, {imgY})  →  窗体: ({targetX}, {targetY})";
     }
 
     [RelayCommand]
@@ -95,12 +108,12 @@ public partial class DebugViewModel : ViewModelBase
         IsBusy = false;
     }
 
-    [RelayCommand]
-    private async Task ClickAsync()
+    public async Task ClickAtAsync(int x, int y)
     {
-        if (!int.TryParse(ClickX, out var x) || !int.TryParse(ClickY, out var y)) return;
         IsBusy = true;
-        _log.Info($"点击坐标: ({x}, {y})");
+        ClickX = x.ToString();
+        ClickY = y.ToString();
+        _log.Info($"截图点击坐标: ({x}, {y})");
         try
         {
             var result = await _controller.ClickAsync(x, y);
@@ -111,6 +124,13 @@ public partial class DebugViewModel : ViewModelBase
             _log.Error($"点击异常: {ex.Message}");
         }
         IsBusy = false;
+    }
+
+    [RelayCommand]
+    private async Task ClickAsync()
+    {
+        if (!int.TryParse(ClickX, out var x) || !int.TryParse(ClickY, out var y)) return;
+        await ClickAtAsync(x, y);
     }
 
     [RelayCommand]

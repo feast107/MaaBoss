@@ -17,9 +17,10 @@
           <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" Height="400" HorizontalAlignment="Stretch">
             <Panel>
               <TextBlock Text="暂无截图，点击下方按钮截取" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.5" IsVisible="{Binding Screenshot, Converter={x:Static ObjectConverters.IsNull}}"/>
-              <Image Source="{Binding Screenshot}" Stretch="Uniform" IsVisible="{Binding Screenshot, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+              <Image x:Name="ScreenshotImage" Source="{Binding Screenshot}" Stretch="Uniform" IsVisible="{Binding Screenshot, Converter={x:Static ObjectConverters.IsNotNull}}" PointerMoved="ScreenshotImage_OnPointerMoved" PointerExited="ScreenshotImage_OnPointerExited" PointerPressed="ScreenshotImage_OnPointerPressed"/>
             </Panel>
           </Border>
+          <TextBlock Text="{Binding CursorPosText}" FontSize="12" Opacity="0.7" FontFamily="Consolas, monospace"/>
           <Button Content="截图" Command="{Binding TakeScreenshotCommand}" HorizontalAlignment="Left"/>
         </StackPanel>
       </Border>

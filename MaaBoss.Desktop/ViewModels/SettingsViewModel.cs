@@ -17,16 +17,16 @@ public partial class SettingsViewModel : ViewModelBase
         Win32InputMethod Mouse,
         Win32InputMethod Keyboard);
 
-    public ObservableCollection<ControllerPreset> ControllerPresets { get; } = new()
-    {
-        new("后台窗口 (DXGI)", Win32ScreencapMethod.DXGI_DesktopDup_Window, Win32InputMethod.SendMessageWithCursorPos, Win32InputMethod.PostMessage),
+    public ObservableCollection<ControllerPreset> ControllerPresets { get; } =
+    [
         new("后台窗口 (PrintWindow)", Win32ScreencapMethod.PrintWindow, Win32InputMethod.SendMessageWithWindowPos, Win32InputMethod.PostMessage),
-        new("前台独占", Win32ScreencapMethod.ScreenDC, Win32InputMethod.Seize, Win32InputMethod.Seize),
-    };
+        new("后台窗口 (DXGI)", Win32ScreencapMethod.DXGI_DesktopDup_Window, Win32InputMethod.SendMessageWithCursorPos, Win32InputMethod.PostMessage),
+        new("前台独占", Win32ScreencapMethod.ScreenDC, Win32InputMethod.Seize, Win32InputMethod.Seize)
+    ];
 
     [ObservableProperty]
     public partial ControllerPreset SelectedControllerPreset { get; set; } = new(
-        "后台窗口 (DXGI)", Win32ScreencapMethod.DXGI_DesktopDup_Window, Win32InputMethod.SendMessageWithCursorPos, Win32InputMethod.PostMessage);
+        "后台窗口 (PrintWindow)", Win32ScreencapMethod.PrintWindow, Win32InputMethod.SendMessageWithCursorPos, Win32InputMethod.PostMessage);
 
     [ObservableProperty]
     public partial string Win32WindowName { get; set; } = "BOSS直聘";
