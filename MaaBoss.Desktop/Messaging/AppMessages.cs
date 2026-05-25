@@ -1,5 +1,5 @@
 using CommunityToolkit.Mvvm.Messaging.Messages;
-using MaaBoss.Desktop.Infrastructure.Maa;
+using MaaBoss.Desktop.Models;
 
 namespace MaaBoss.Desktop.Messaging;
 

@@ -71,7 +71,10 @@ public partial class DebugViewModel : ViewModelBase
         _log.Info("开始截图...");
         try
         {
-            var path = Path.Combine(Path.GetTempPath(), $"maaboss_screenshot_{DateTime.Now:HHmmss}.png");
+            var screenshotsDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
+            if (!Directory.Exists(screenshotsDir))
+                Directory.CreateDirectory(screenshotsDir);
+            var path = Path.Combine(screenshotsDir, $"maaboss_screenshot_{DateTime.Now:HHmmss}.png");
             var result = await _controller.ScreenshotAsync(path);
             if (result.Success && File.Exists(path))
             {

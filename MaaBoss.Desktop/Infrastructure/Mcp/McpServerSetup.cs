@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using MaaBoss.Desktop.Infrastructure.Maa;
 using MaaBoss.Desktop.Models;
 using MaaBoss.Desktop.Services;
 

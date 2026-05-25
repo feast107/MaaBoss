@@ -2,9 +2,8 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using MaaBoss.Desktop.Infrastructure.Maa;
-using MaaBoss.Desktop.Messaging;
 using MaaBoss.Desktop.Models;
+using MaaBoss.Desktop.Messaging;
 using MaaBoss.Desktop.Services;
 
 namespace MaaBoss.Desktop.ViewModels;
