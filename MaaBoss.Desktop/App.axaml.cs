@@ -22,10 +22,12 @@ public partial class App : Application
         var controllerService = new ControllerService();
         var taskService = new TaskService(controllerService);
         var logService = new LogService();
+        var settingsVm = new SettingsViewModel();
 
         ServiceLocator.Register(controllerService);
         ServiceLocator.Register(taskService);
         ServiceLocator.Register(logService);
+        ServiceLocator.Register(settingsVm);
 
         // 日志服务通过 Messenger 广播
         logService.PropertyChanged += (_, e) =>

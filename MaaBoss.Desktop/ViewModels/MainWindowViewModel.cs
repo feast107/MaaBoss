@@ -24,7 +24,7 @@ public partial class MainWindowViewModel : ViewModelBase
         navService.RegisterViewModel("Candidates", () => new CandidateBrowserViewModel());
         navService.RegisterViewModel("Chat", () => new ChatViewModel());
         navService.RegisterViewModel("Debug", () => new DebugViewModel());
-        navService.RegisterViewModel("Settings", () => new SettingsViewModel());
+        navService.RegisterViewModel("Settings", () => ServiceLocator.Get<SettingsViewModel>());
 
         // 导航项列表
         NavigationItems.Add(new NavItem("仪表盘", "Dashboard"));
