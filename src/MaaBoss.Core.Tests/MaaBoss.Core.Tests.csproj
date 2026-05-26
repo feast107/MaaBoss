@@ -21,6 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\MaaBoss.Core\assets\**\*" CopyToOutputDirectory="PreserveNewest" Link="assets\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MaaBoss.Core\MaaBoss.Core.csproj" />
   </ItemGroup>
 </Project>

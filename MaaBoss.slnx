@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MaaBoss.Core/MaaBoss.Core.csproj" />
+    <Project Path="src/MaaBoss.Core.Tests/MaaBoss.Core.Tests.csproj" />
+    <Project Path="src/MaaBoss.Desktop/MaaBoss.Desktop.csproj" />
+  </Folder>
+</Solution>

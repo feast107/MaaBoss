@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
-    <Content Include="..\..\assets\pipeline\**\*" CopyToOutputDirectory="PreserveNewest" Link="assets\pipeline\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\MaaBoss.Core\assets\**\*" CopyToOutputDirectory="PreserveNewest" Link="assets\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

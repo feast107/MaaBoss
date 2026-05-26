@@ -89,7 +89,7 @@ public class ControllerService
     /// </summary>
     public async Task<ConnectResult> ConnectAsync(
         string? windowName = null,
-        Win32ScreencapMethod screencapMethod = Win32ScreencapMethod.DXGI_DesktopDup_Window,
+        Win32ScreencapMethod screencapMethod = Win32ScreencapMethod.PrintWindow,
         Win32InputMethod mouseMethod = Win32InputMethod.SendMessageWithCursorPos,
         Win32InputMethod keyboardMethod = Win32InputMethod.PostMessage,
         CancellationToken ct = default)
@@ -136,9 +136,7 @@ public class ControllerService
                 check: CheckStatusOption.ThrowIfNotSucceeded);
 
             var resourcePath = Path.Combine(AppContext.BaseDirectory, "assets", "pipeline");
-            var resource = new MaaResource(
-                CheckStatusOption.ThrowIfNotSucceeded,
-                new[] { resourcePath });
+            var resource = new MaaResource(CheckStatusOption.ThrowIfNotSucceeded, resourcePath);
 
             _tasker = new MaaTasker
             {
