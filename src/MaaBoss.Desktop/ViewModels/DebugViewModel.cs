@@ -306,11 +306,7 @@ public partial class DebugViewModel : ViewModelBase
             // 这里先简单实现：无条件点击
 
             // ========== STEP 2: 点击消息按钮 ==========
-            _log.Info("[Flow] STEP 2/4: 点击消息按钮 (52, 176)...");
-            var clickResult = await _controller.ClickAsync(52, 176, ct);
-            if (!clickResult.Success) throw new InvalidOperationException("点击失败");
-            _log.Info("[Flow] 点击成功");
-            await Task.Delay(500, ct); // 等待 UI 响应
+            await ClickMessageButtonAsync(ct);
 
             // ========== STEP 3: 点击后截图 ==========
             _log.Info("[Flow] STEP 3/4: 点击后截图...");
@@ -353,6 +349,75 @@ public partial class DebugViewModel : ViewModelBase
             IsFlowRunning = false;
             _flowCts = null;
         }
+    }
+
+    /// <summary>
+    /// 基本动作：点击左侧导航的"消息"按钮。
+    /// 范围：左上 1.3%,22.7% → 右下 7.7%,26.4%。
+    /// 每次在范围内随机选点，规避反自动化检测。
+    /// </summary>
+    private async Task ClickMessageButtonAsync(CancellationToken ct)
+    {
+        _log.Info("[Action] 点击消息按钮...");
+        var (ctrlW, ctrlH) = _controller.Resolution;
+
+        double pctX = Random.Shared.NextDouble() * (0.077 - 0.013) + 0.013;
+        double pctY = Random.Shared.NextDouble() * (0.264 - 0.227) + 0.227;
+
+        int x = (int)(pctX * ctrlW);
+        int y = (int)(pctY * ctrlH);
+
+        _log.Info($"[Action] 点击坐标: ({x}, {y}) [百分比: {pctX:P2}, {pctY:P2}]");
+        var result = await _controller.ClickAsync(x, y, ct);
+        if (!result.Success) throw new InvalidOperationException("点击消息按钮失败");
+        _log.Info("[Action] 点击成功");
+        await Task.Delay(500, ct);
+    }
+
+    /// <summary>
+    /// 基本动作：点击"全部"消息按钮。
+    /// 范围：左上 11.4%,18.4% → 右下 12.5%,19.2%。
+    /// 每次在范围内随机选点，规避反自动化检测。
+    /// </summary>
+    private async Task ClickAllMessagesButtonAsync(CancellationToken ct)
+    {
+        _log.Info("[Action] 点击全部消息按钮...");
+        var (ctrlW, ctrlH) = _controller.Resolution;
+
+        double pctX = Random.Shared.NextDouble() * (0.125 - 0.114) + 0.114;
+        double pctY = Random.Shared.NextDouble() * (0.192 - 0.184) + 0.184;
+
+        int x = (int)(pctX * ctrlW);
+        int y = (int)(pctY * ctrlH);
+
+        _log.Info($"[Action] 点击坐标: ({x}, {y}) [百分比: {pctX:P2}, {pctY:P2}]");
+        var result = await _controller.ClickAsync(x, y, ct);
+        if (!result.Success) throw new InvalidOperationException("点击全部消息按钮失败");
+        _log.Info("[Action] 点击成功");
+        await Task.Delay(500, ct);
+    }
+
+    /// <summary>
+    /// 基本动作：点击"未读"消息按钮。
+    /// 范围：左上 14.7%,18.4% → 右下 16.0%,19.2%。
+    /// 每次在范围内随机选点，规避反自动化检测。
+    /// </summary>
+    private async Task ClickUnreadMessagesButtonAsync(CancellationToken ct)
+    {
+        _log.Info("[Action] 点击未读消息按钮...");
+        var (ctrlW, ctrlH) = _controller.Resolution;
+
+        double pctX = Random.Shared.NextDouble() * (0.160 - 0.147) + 0.147;
+        double pctY = Random.Shared.NextDouble() * (0.192 - 0.184) + 0.184;
+
+        int x = (int)(pctX * ctrlW);
+        int y = (int)(pctY * ctrlH);
+
+        _log.Info($"[Action] 点击坐标: ({x}, {y}) [百分比: {pctX:P2}, {pctY:P2}]");
+        var result = await _controller.ClickAsync(x, y, ct);
+        if (!result.Success) throw new InvalidOperationException("点击未读消息按钮失败");
+        _log.Info("[Action] 点击成功");
+        await Task.Delay(500, ct);
     }
 
     [RelayCommand]
