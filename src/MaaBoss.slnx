@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="MaaBoss.Core/MaaBoss.Core.csproj" />
+    <Project Path="MaaBoss.Core.Tests/MaaBoss.Core.Tests.csproj" />
+    <Project Path="MaaBoss.Desktop/MaaBoss.Desktop.csproj" />
+  </Folder>
+  <Folder Name="/assets/">
+    <File Path="../assets/pipeline/default_pipeline.json" />
+    <File Path="../assets/pipeline/startup.json" />
+    <File Path="../assets/pipeline/browse_candidates.json" />
+    <File Path="../assets/pipeline/candidate_detail.json" />
+    <File Path="../assets/pipeline/chat.json" />
+    <File Path="../assets/pipeline/greet_candidate.json" />
+    <File Path="../assets/pipeline/job_management.json" />
+  </Folder>
+  <Folder Name="/docs/">
+    <File Path="../docs/architecture.md" />
+    <File Path="../docs/api_reference.md" />
+    <File Path="../docs/pipeline_guide.md" />
+  </Folder>
+</Solution>
