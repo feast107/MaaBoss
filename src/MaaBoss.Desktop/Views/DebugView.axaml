@@ -1,17 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:MaaBoss.Desktop.ViewModels"
-             xmlns:models="using:MaaBoss.Core.Models"
-             xmlns:conv="using:MaaBoss.Desktop.Infrastructure.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="1400" d:DesignHeight="900"
              x:Class="MaaBoss.Desktop.Views.DebugView"
              x:DataType="vm:DebugViewModel">
-
-  <UserControl.Resources>
-    <conv:EnumEqualsConverter x:Key="EnumEquals"/>
-  </UserControl.Resources>
 
   <DockPanel LastChildFill="True">
     <!-- 顶部标题 -->
@@ -54,13 +48,13 @@
 
     <!-- 中间主内容 -->
     <ScrollViewer>
-      <StackPanel Spacing="8">
+      <StackPanel Spacing="12">
         <!-- 截图区域 -->
         <Border Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="12">
           <StackPanel Spacing="6">
             <TextBlock Text="屏幕截图" FontSize="16" FontWeight="SemiBold"/>
             <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}"
-                    Height="260"
+                    Height="480"
                     HorizontalAlignment="Stretch">
               <Panel>
                 <TextBlock Text="暂无截图，点击下方按钮截取"
@@ -93,352 +87,39 @@
           </StackPanel>
         </Border>
 
-        <!-- 流程编辑（三列：流程列表 | 流程步骤 | 步骤属性） -->
-        <Grid ColumnDefinitions="200,280,*">
-          <!-- 左列：已保存的流程列表 -->
-          <Border Grid.Column="0"
-                  Background="{DynamicResource SystemChromeLowColor}"
-                  CornerRadius="8"
-                  Padding="8"
-                  Margin="0,0,8,0">
-            <StackPanel Spacing="6">
-              <TextBlock Text="已保存流程" FontSize="14" FontWeight="SemiBold"/>
-              <ListBox ItemsSource="{Binding SavedFlows}"
-                       SelectedItem="{Binding SelectedSavedFlow}"
-                       Height="280">
-                <ListBox.ItemTemplate>
-                  <DataTemplate>
-                    <TextBlock Text="{Binding}" FontSize="12"/>
-                  </DataTemplate>
-                </ListBox.ItemTemplate>
-              </ListBox>
-              <StackPanel Orientation="Horizontal" Spacing="4">
-                <Button Content="刷新" Command="{Binding RefreshFlowsCommand}" Padding="8,2" FontSize="11"/>
-                <Button Content="加载" Command="{Binding LoadFlowCommand}" CommandParameter="{Binding SelectedSavedFlow}" Padding="8,2" FontSize="11"/>
-              </StackPanel>
-            </StackPanel>
-          </Border>
+        <!-- 预设流程按钮（直接方法调用） -->
+        <Border Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="12">
+          <StackPanel Spacing="8">
+            <TextBlock Text="预设流程（方法调用）" FontSize="16" FontWeight="SemiBold"/>
+            <TextBlock Text="点击按钮直接调用后台 C# 方法执行完整流程，支持条件判断"
+                       FontSize="11" Opacity="0.5"/>
+            <WrapPanel Orientation="Horizontal">
+              <Button Content="消息按钮点击与裁剪"
+                      Command="{Binding RunMessageButtonFlowCommand}"
+                      Padding="16,8"
+                      FontSize="13"
+                      Background="{DynamicResource SystemAccentColor}"
+                      Foreground="White"
+                      CornerRadius="6"
+                      Margin="0,0,8,8"/>
+            </WrapPanel>
+          </StackPanel>
+        </Border>
 
-          <!-- 中列：流程步骤 -->
-          <Border Grid.Column="1"
-                  Background="{DynamicResource SystemChromeLowColor}"
-                  CornerRadius="8"
-                  Padding="8"
-                  Margin="0,0,8,0">
-            <StackPanel Spacing="6">
-              <TextBlock Text="流程步骤" FontSize="14" FontWeight="SemiBold"/>
-              <ListBox ItemsSource="{Binding Steps}"
-                       SelectedItem="{Binding SelectedStep}"
-                       Height="180">
-                <ListBox.ItemTemplate>
-                  <DataTemplate DataType="models:FlowStep">
-                    <StackPanel>
-                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12"/>
-                      <TextBlock Text="{Binding Action}" FontSize="11" Opacity="0.6"/>
-                    </StackPanel>
-                  </DataTemplate>
-                </ListBox.ItemTemplate>
-              </ListBox>
-              <WrapPanel>
-                <Button Content="+点击"
-                        Command="{Binding AddStepCommand}"
-                        CommandParameter="{x:Static models:FlowActionType.Click}"
-                        Padding="6,2"
-                        Margin="0,0,4,4"
-                        FontSize="11"/>
-                <Button Content="+滑动"
-                        Command="{Binding AddStepCommand}"
-                        CommandParameter="{x:Static models:FlowActionType.Swipe}"
-                        Padding="6,2"
-                        Margin="0,0,4,4"
-                        FontSize="11"/>
-                <Button Content="+滚轮"
-                        Command="{Binding AddStepCommand}"
-                        CommandParameter="{x:Static models:FlowActionType.Scroll}"
-                        Padding="6,2"
-                        Margin="0,0,4,4"
-                        FontSize="11"/>
-                <Button Content="+等待"
-                        Command="{Binding AddStepCommand}"
-                        CommandParameter="{x:Static models:FlowActionType.Wait}"
-                        Padding="6,2"
-                        Margin="0,0,4,4"
-                        FontSize="11"/>
-                <Button Content="+延时"
-                        Command="{Binding AddStepCommand}"
-                        CommandParameter="{x:Static models:FlowActionType.Delay}"
-                        Padding="6,2"
-                        Margin="0,0,4,4"
-                        FontSize="11"/>
-                <Button Content="+截图"
-                        Command="{Binding AddStepCommand}"
-                        CommandParameter="{x:Static models:FlowActionType.Screenshot}"
-                        Padding="6,2"
-                        Margin="0,0,4,4"
-                        FontSize="11"/>
-                <Button Content="+Pipeline"
-                        Command="{Binding AddStepCommand}"
-                        CommandParameter="{x:Static models:FlowActionType.Pipeline}"
-                        Padding="6,2"
-                        Margin="0,0,4,4"
-                        FontSize="11"/>
-              </WrapPanel>
-              <StackPanel Orientation="Horizontal" Spacing="4">
-                <Button Content="上移" Command="{Binding MoveUpCommand}" Padding="8,2" FontSize="11"/>
-                <Button Content="下移" Command="{Binding MoveDownCommand}" Padding="8,2" FontSize="11"/>
-                <Button Content="删除" Command="{Binding RemoveStepCommand}" Padding="8,2" FontSize="11"/>
-              </StackPanel>
-            </StackPanel>
-          </Border>
-
-          <!-- 右列：步骤属性 -->
-          <Border Grid.Column="2"
-                  Background="{DynamicResource SystemChromeLowColor}"
-                  CornerRadius="8"
-                  Padding="10">
-            <StackPanel Spacing="6">
-              <TextBlock Text="步骤属性" FontSize="14" FontWeight="SemiBold"/>
-
-              <Panel IsVisible="{Binding SelectedStep, Converter={x:Static ObjectConverters.IsNull}}">
-                <TextBlock Text="请选择一个步骤进行编辑"
-                           Opacity="0.5"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"/>
-              </Panel>
-
-              <StackPanel Spacing="5"
-                          IsVisible="{Binding SelectedStep, Converter={x:Static ObjectConverters.IsNotNull}}">
-
-                <!-- 名称 -->
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                  <TextBlock Text="名称" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                  <TextBox Text="{Binding SelectedStep.Name}" Watermark="步骤名称" Width="160" FontSize="12"/>
-                </StackPanel>
-
-                <!-- 类型 -->
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                  <TextBlock Text="类型" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                  <ComboBox ItemsSource="{Binding ActionTypes}" SelectedItem="{Binding SelectedStep.Action}" Width="160"/>
-                </StackPanel>
-
-                <!-- 识别方式 -->
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                  <TextBlock Text="识别" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                  <ComboBox ItemsSource="{Binding RecognitionTypes}" SelectedItem="{Binding SelectedStep.Recognition}" Width="160"/>
-                </StackPanel>
-
-                <!-- ===== 识别参数（非 DirectHit 时显示） ===== -->
-                <StackPanel Spacing="4">
-                  <StackPanel.IsVisible>
-                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                      <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.TemplateMatch}"/>
-                      <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.FeatureMatch}"/>
-                      <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.OCR}"/>
-                      <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.ColorMatch}"/>
-                    </MultiBinding>
-                  </StackPanel.IsVisible>
-
-                  <!-- TemplateMatch / FeatureMatch: 模板路径 -->
-                  <StackPanel Spacing="4">
-                    <StackPanel.IsVisible>
-                      <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                        <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.TemplateMatch}"/>
-                        <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.FeatureMatch}"/>
-                      </MultiBinding>
-                    </StackPanel.IsVisible>
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                      <TextBlock Text="模板" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                      <TextBox Text="{Binding SelectedStep.Template}" Watermark="path/to/image.png" Width="160" FontSize="12"/>
-                    </StackPanel>
-                  </StackPanel>
-
-                  <!-- OCR: 期望文字 -->
-                  <StackPanel Spacing="4"
-                              IsVisible="{Binding SelectedStep.Recognition, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowRecognitionType.OCR}}">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                      <TextBlock Text="文字" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                      <TextBox Text="{Binding SelectedStep.Expected}" Watermark="期望文字，多行换行" Width="160" FontSize="12" AcceptsReturn="True" Height="48"/>
-                    </StackPanel>
-                  </StackPanel>
-
-                  <!-- ROI -->
-                  <StackPanel Orientation="Horizontal" Spacing="4">
-                    <TextBlock Text="ROI" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown Value="{Binding SelectedStep.RoiX}" Watermark="X" Minimum="0" Maximum="9999" Width="56" FontSize="11"/>
-                    <NumericUpDown Value="{Binding SelectedStep.RoiY}" Watermark="Y" Minimum="0" Maximum="9999" Width="56" FontSize="11"/>
-                    <NumericUpDown Value="{Binding SelectedStep.RoiW}" Watermark="W" Minimum="0" Maximum="9999" Width="56" FontSize="11"/>
-                    <NumericUpDown Value="{Binding SelectedStep.RoiH}" Watermark="H" Minimum="0" Maximum="9999" Width="56" FontSize="11"/>
-                  </StackPanel>
-
-                  <!-- 阈值 & 超时 -->
-                  <StackPanel Orientation="Horizontal" Spacing="4">
-                    <TextBlock Text="阈值" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown Value="{Binding SelectedStep.Threshold}" Minimum="0" Maximum="1" Increment="0.05" Width="70" FontSize="11"/>
-                    <TextBlock Text="超时" VerticalAlignment="Center" FontSize="12" Margin="6,0,0,0"/>
-                    <NumericUpDown Value="{Binding SelectedStep.Timeout}" Minimum="1000" Maximum="120000" Increment="1000" Width="70" FontSize="11"/>
-                  </StackPanel>
-
-                  <CheckBox Content="反向匹配" IsChecked="{Binding SelectedStep.Inverse}" FontSize="12"/>
-                </StackPanel>
-
-                <!-- ===== 高级识别参数（NeuralNetwork / And / Or / Custom） ===== -->
-                <StackPanel Spacing="4">
-                  <StackPanel.IsVisible>
-                    <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                      <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.NeuralNetworkClassify}"/>
-                      <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.NeuralNetworkDetect}"/>
-                      <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.And}"/>
-                      <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.Or}"/>
-                      <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.Custom}"/>
-                    </MultiBinding>
-                  </StackPanel.IsVisible>
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="JSON" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <TextBox Text="{Binding SelectedStep.CustomRecognitionJson}" Watermark="请输入 JSON 参数..." Width="160" FontSize="11" AcceptsReturn="True" Height="80"/>
-                  </StackPanel>
-                  <TextBlock Text="在此输入该识别类型的原始 JSON 参数" FontSize="10" Opacity="0.5"/>
-                </StackPanel>
-
-                <!-- ===== Action 参数 ===== -->
-
-                <!-- Click 坐标 -->
-                <StackPanel Spacing="4"
-                            IsVisible="{Binding SelectedStep.Action, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowActionType.Click}}">
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="X" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown Value="{Binding SelectedStep.X}" Minimum="0" Maximum="9999" Width="120"/>
-                  </StackPanel>
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="Y" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown Value="{Binding SelectedStep.Y}" Minimum="0" Maximum="9999" Width="120"/>
-                  </StackPanel>
-                  <!-- 识别模式下的目标偏移 -->
-                  <StackPanel Spacing="4">
-                    <StackPanel.IsVisible>
-                      <MultiBinding Converter="{x:Static BoolConverters.Or}">
-                        <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.TemplateMatch}"/>
-                        <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.OCR}"/>
-                        <Binding Path="SelectedStep.Recognition" Converter="{StaticResource EnumEquals}" ConverterParameter="{x:Static models:FlowRecognitionType.ColorMatch}"/>
-                      </MultiBinding>
-                    </StackPanel.IsVisible>
-                    <StackPanel Orientation="Horizontal" Spacing="4">
-                      <TextBlock Text="偏移" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                      <NumericUpDown Value="{Binding SelectedStep.TargetOffsetX}" Watermark="X" Minimum="-9999" Maximum="9999" Width="60" FontSize="11"/>
-                      <NumericUpDown Value="{Binding SelectedStep.TargetOffsetY}" Watermark="Y" Minimum="-9999" Maximum="9999" Width="60" FontSize="11"/>
-                    </StackPanel>
-                    <TextBlock Text="识别后点击位置的相对偏移" FontSize="10" Opacity="0.5"/>
-                  </StackPanel>
-                </StackPanel>
-
-                <!-- Swipe 坐标 -->
-                <StackPanel Spacing="4"
-                            IsVisible="{Binding SelectedStep.Action, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowActionType.Swipe}}">
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="X1" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown Value="{Binding SelectedStep.X}" Minimum="0" Maximum="9999" Width="120"/>
-                  </StackPanel>
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="Y1" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown Value="{Binding SelectedStep.Y}" Minimum="0" Maximum="9999" Width="120"/>
-                  </StackPanel>
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="X2" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown Value="{Binding SelectedStep.X2}" Minimum="0" Maximum="9999" Width="120"/>
-                  </StackPanel>
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="Y2" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown Value="{Binding SelectedStep.Y2}" Minimum="0" Maximum="9999" Width="120"/>
-                  </StackPanel>
-                </StackPanel>
-
-                <!-- Scroll 滚轮 -->
-                <StackPanel Spacing="4"
-                            IsVisible="{Binding SelectedStep.Action, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowActionType.Scroll}}">
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="X" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown Value="{Binding SelectedStep.X}" Minimum="0" Maximum="9999" Width="120"/>
-                  </StackPanel>
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="Y" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown Value="{Binding SelectedStep.Y}" Minimum="0" Maximum="9999" Width="120"/>
-                  </StackPanel>
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="增量" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown Value="{Binding SelectedStep.ScrollDelta}" Minimum="-9999" Maximum="9999" Width="120"/>
-                  </StackPanel>
-                  <TextBlock Text="正数向上滚动，负数向下滚动" FontSize="10" Opacity="0.5"/>
-                </StackPanel>
-
-                <!-- Wait / Delay 时长 -->
-                <StackPanel Spacing="4"
-                            IsVisible="{Binding SelectedStep.Action, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowActionType.Wait}}">
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="时长(ms)" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown Value="{Binding SelectedStep.DurationMs}" Minimum="0" Maximum="600000" Width="120"/>
-                  </StackPanel>
-                </StackPanel>
-                <StackPanel Spacing="4"
-                            IsVisible="{Binding SelectedStep.Action, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowActionType.Delay}}">
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="时长(ms)" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown Value="{Binding SelectedStep.DurationMs}" Minimum="0" Maximum="600000" Width="120"/>
-                  </StackPanel>
-                </StackPanel>
-
-                <!-- InputText -->
-                <StackPanel Spacing="4"
-                            IsVisible="{Binding SelectedStep.Action, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowActionType.InputText}}">
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="内容" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <TextBox Text="{Binding SelectedStep.Text}" Watermark="输入内容" Width="160" FontSize="12"/>
-                  </StackPanel>
-                </StackPanel>
-
-                <!-- Pipeline -->
-                <StackPanel Spacing="4"
-                            IsVisible="{Binding SelectedStep.Action, Converter={StaticResource EnumEquals}, ConverterParameter={x:Static models:FlowActionType.Pipeline}}">
-                  <StackPanel Orientation="Horizontal" Spacing="6">
-                    <TextBlock Text="Pipeline" Width="50" VerticalAlignment="Center" FontSize="12"/>
-                    <TextBox Text="{Binding SelectedStep.PipelineName}" Watermark="名称" Width="160" FontSize="12"/>
-                  </StackPanel>
-                </StackPanel>
-
-                <!-- ===== Pipeline 通用参数 ===== -->
-                <Border Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" CornerRadius="4" Padding="6" Margin="0,4,0,0">
-                  <StackPanel Spacing="4">
-                    <TextBlock Text="Pipeline 参数" FontSize="11" FontWeight="SemiBold" Opacity="0.7"/>
-                    <StackPanel Orientation="Horizontal" Spacing="4">
-                      <TextBlock Text="前延迟" Width="42" VerticalAlignment="Center" FontSize="11"/>
-                      <NumericUpDown Value="{Binding SelectedStep.PreDelay}" Minimum="0" Maximum="60000" Width="70" FontSize="11"/>
-                      <TextBlock Text="后延迟" VerticalAlignment="Center" FontSize="11" Margin="4,0,0,0"/>
-                      <NumericUpDown Value="{Binding SelectedStep.PostDelay}" Minimum="0" Maximum="60000" Width="70" FontSize="11"/>
-                    </StackPanel>
-                  </StackPanel>
-                </Border>
-
-              </StackPanel>
-
-              <!-- 流程工具栏 -->
-              <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
-                <TextBox Text="{Binding FlowName}" Watermark="流程名称" Width="100" FontSize="12"/>
-                <Button Content="保存" Command="{Binding SaveFlowCommand}" Padding="8,2" FontSize="11"/>
-                <Button Content="导出JSON" Command="{Binding ExportPipelineCommand}" Padding="8,2" FontSize="11"/>
-                <Button Content="执行"
-                        Command="{Binding RunFlowCommand}"
-                        IsVisible="{Binding !IsFlowRunning}"
-                        Padding="14,2"
-                        FontSize="12"
-                        Background="{DynamicResource SystemAccentColor}"
-                        Foreground="White"/>
-                <Button Content="停止"
-                        Command="{Binding StopFlowCommand}"
-                        IsVisible="{Binding IsFlowRunning}"
-                        Padding="14,2"
-                        FontSize="12"/>
-              </StackPanel>
-            </StackPanel>
-          </Border>
-        </Grid>
+        <!-- 执行状态 -->
+        <Border Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="12"
+                IsVisible="{Binding IsFlowRunning}">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <TextBlock Text="正在执行流程..."
+                       FontSize="14"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"/>
+            <Button Content="停止"
+                    Command="{Binding StopFlowCommand}"
+                    Padding="14,4"
+                    FontSize="12"/>
+          </StackPanel>
+        </Border>
 
         <!-- Pipeline 执行 -->
         <Border Background="{DynamicResource SystemChromeLowColor}" CornerRadius="8" Padding="12">

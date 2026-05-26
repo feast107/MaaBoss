@@ -10,4 +10,5 @@ public enum FlowActionType
     Screenshot,
     Pipeline,
     Delay,
+    CropImage,
 }

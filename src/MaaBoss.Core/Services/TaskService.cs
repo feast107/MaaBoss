@@ -41,7 +41,7 @@ public class TaskService
         {
             try
             {
-                await _ctrl.RunPipelineAsync("Startup", null, ct);
+                //await _ctrl.RunPipelineAsync("Startup", null, ct);
             }
             catch (Exception ex)
             {
