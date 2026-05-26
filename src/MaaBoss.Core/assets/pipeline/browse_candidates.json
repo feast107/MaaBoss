@@ -1,5 +1,4 @@
 {
-    "_doc": "候选人浏览流程：筛选、浏览、收集候选人列表",
     "BrowseCandidates": {
         "recognition": "TemplateMatch",
         "template": "candidates/tab_recommend.png",
@@ -20,8 +19,8 @@
     },
     "TypeKeyword": {
         "recognition": "DirectHit",
-        "action": "Input",
-        "input": "{{keyword}}",
+        "action": "InputText",
+        "input_text": "{{keyword}}",
         "next": ["ConfirmSearch"]
     },
     "ConfirmSearch": {

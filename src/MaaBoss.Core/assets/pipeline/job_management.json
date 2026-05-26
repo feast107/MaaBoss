@@ -1,5 +1,4 @@
 {
-    "_doc": "职位管理流程：查看职位状态、浏览投递记录",
     "CheckJobPosts": {
         "recognition": "TemplateMatch",
         "template": "jobs/tab_job_mgmt.png",

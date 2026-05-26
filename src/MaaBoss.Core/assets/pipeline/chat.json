@@ -1,5 +1,4 @@
 {
-    "_doc": "消息沟通流程：进入消息列表、识别未读、发送消息",
     "EnterChatList": {
         "recognition": "TemplateMatch",
         "template": "chat/tab_message.png",
@@ -20,8 +19,8 @@
     },
     "TypeMessage": {
         "recognition": "DirectHit",
-        "action": "Input",
-        "input": "{{message}}",
+        "action": "InputText",
+        "input_text": "{{message}}",
         "next": ["SendMessage"]
     },
     "SendMessage": {

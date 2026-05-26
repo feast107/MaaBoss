@@ -1,5 +1,4 @@
 {
-    "_doc": "候选人简历详情查看流程",
     "ViewCandidateDetail": {
         "recognition": "OCR",
         "expected": ["{{candidate_name}}"],

@@ -1,5 +1,4 @@
 {
-    "_doc": "候选人沟通发起流程：选择候选人、点击打招呼、处理弹窗",
     "GreetCandidate": {
         "recognition": "TemplateMatch",
         "template": "candidates/candidate_card_first.png",
@@ -20,8 +19,8 @@
     },
     "InputGreeting": {
         "recognition": "DirectHit",
-        "action": "Input",
-        "input": "{{greeting_msg}}",
+        "action": "InputText",
+        "input_text": "{{greeting_msg}}",
         "next": ["SendGreeting"]
     },
     "SendGreeting": {

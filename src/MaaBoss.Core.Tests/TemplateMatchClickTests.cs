@@ -48,7 +48,7 @@ public class TemplateMatchClickTests : IDisposable
         _output.WriteLine($"[STEP 2] 截图已保存: {screenshotPath}");
 
         // ---- 3. 验证模板图片资源存在 ----
-        var templatePath = Path.Combine(AppContext.BaseDirectory, "assets", "images", "消息.png");
+        var templatePath = Path.Combine(AppContext.BaseDirectory, "assets", "image", "消息.png");
         Assert.True(File.Exists(templatePath), $"模板图片不存在: {templatePath}");
         _output.WriteLine($"[STEP 3] 模板图片存在: {templatePath}");
 
@@ -58,8 +58,11 @@ public class TemplateMatchClickTests : IDisposable
         {
             ["ClickMessage"] = new Dictionary<string, object>
             {
-                ["recognition"] = "TemplateMatch",
+                ["recognition"] = "FeatureMatch",
                 ["template"] = "消息.png",
+                ["detector"] = "SIFT",
+                ["count"] = 4,
+                ["ratio"] = 0.8,
                 ["action"] = "Click",
                 ["next"] = new List<string>()
             }

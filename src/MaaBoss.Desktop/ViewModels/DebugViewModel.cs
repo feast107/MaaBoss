@@ -427,8 +427,8 @@ public partial class DebugViewModel : ViewModelBase
                 break;
 
             case FlowActionType.InputText:
-                node["action"] = "Input";
-                node["input"] = step.Text;
+                node["action"] = "InputText";
+                node["input_text"] = step.Text;
                 break;
 
             case FlowActionType.Wait:

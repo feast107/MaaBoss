@@ -1,5 +1,4 @@
 {
-    "_doc": "启动流程：连接客户端并等待主界面加载",
     "Startup": {
         "recognition": "TemplateMatch",
         "template": "startup/app_icon.png",

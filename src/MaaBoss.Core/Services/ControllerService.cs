@@ -135,7 +135,7 @@ public class ControllerService
                 link: LinkOption.Start,
                 check: CheckStatusOption.ThrowIfNotSucceeded);
 
-            var resourcePath = Path.Combine(AppContext.BaseDirectory, "assets", "pipeline");
+            var resourcePath = Path.Combine(AppContext.BaseDirectory, "assets");
             var resource = new MaaResource(CheckStatusOption.ThrowIfNotSucceeded, resourcePath);
 
             _tasker = new MaaTasker
@@ -281,7 +281,7 @@ public class ControllerService
         EnsureConnected();
         await Task.Run(() =>
         {
-            var resourcePath = Path.Combine(AppContext.BaseDirectory, "assets", "pipeline");
+            var resourcePath = Path.Combine(AppContext.BaseDirectory, "assets");
             var newResource = new MaaResource(
                 CheckStatusOption.ThrowIfNotSucceeded,
                 new[] { resourcePath });
