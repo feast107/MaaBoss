@@ -33,6 +33,9 @@ public partial class App : Application
         var dashboardVm = new DashboardViewModel();
         ServiceLocator.Register(dashboardVm);
 
+        var debugVm = new DebugViewModel();
+        ServiceLocator.Register(debugVm);
+
         // 日志服务通过 Messenger 广播
         logService.PropertyChanged += (_, e) =>
         {

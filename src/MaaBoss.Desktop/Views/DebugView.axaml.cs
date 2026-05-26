@@ -74,4 +74,22 @@ public partial class DebugView : UserControl
         vm.UpdateCursorPosition(ix, iy, tx, ty, px, py);
         _ = vm.ClickAtAsync(tx, ty);
     }
+
+    private void ScreenshotImage_OnPointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        if (sender is not Image img) return;
+        var pos = e.GetPosition(img);
+        if (!TryMapPointerToTarget(img, pos, out var ix, out var iy, out var tx, out var ty, out var px, out var py))
+            return;
+
+        var vm = (DebugViewModel)DataContext!;
+        vm.UpdateCursorPosition(ix, iy, tx, ty, px, py);
+
+        // Avalonia Delta.Y > 0 = 向上, < 0 = 向下
+        // Windows WM_MOUSEWHEEL 正=向上, 负=向下，方向一致
+        var delta = (int)(e.Delta.Y * 360); // 一次滚动 3 行 (120 * 3)
+        _ = vm.ScrollAtAsync(tx, ty, delta);
+
+        e.Handled = true; // 阻止本地 ScrollViewer 消费滚轮事件
+    }
 }

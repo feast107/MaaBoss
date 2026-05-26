@@ -68,7 +68,8 @@
                        IsVisible="{Binding Screenshot, Converter={x:Static ObjectConverters.IsNotNull}}"
                        PointerMoved="ScreenshotImage_OnPointerMoved"
                        PointerExited="ScreenshotImage_OnPointerExited"
-                       PointerPressed="ScreenshotImage_OnPointerPressed"/>
+                       PointerPressed="ScreenshotImage_OnPointerPressed"
+                       PointerWheelChanged="ScreenshotImage_OnPointerWheelChanged"/>
               </Panel>
             </Border>
             <TextBlock Text="{Binding CursorPosText}"
@@ -80,10 +81,15 @@
                        Opacity="0.6"
                        FontFamily="Consolas, monospace"
                        TextWrapping="Wrap"/>
-            <Button Content="截图"
-                    Command="{Binding TakeScreenshotCommand}"
-                    HorizontalAlignment="Left"
-                    Padding="12,4"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Button Content="截图"
+                      Command="{Binding TakeScreenshotCommand}"
+                      Padding="12,4"/>
+              <Button Content="{Binding LiveButtonText}"
+                      Command="{Binding ToggleLiveCaptureCommand}"
+                      Padding="12,4"
+                      FontSize="12"/>
+            </StackPanel>
           </StackPanel>
         </Border>
 

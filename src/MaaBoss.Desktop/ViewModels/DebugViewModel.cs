@@ -56,9 +56,17 @@ public partial class DebugViewModel : ViewModelBase
     [ObservableProperty]
     public partial ObservableCollection<string> SavedFlows { get; set; } = new();
 
+    // 实时截图
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(LiveButtonText))]
+    public partial bool IsLiveCapturing { get; set; }
+
+    public string LiveButtonText => IsLiveCapturing ? "■ 停止" : "● 实时";
+
     private readonly ControllerService _controller;
     private readonly LogService _log;
     private CancellationTokenSource? _flowCts;
+    private CancellationTokenSource? _liveCaptureCts;
 
     public DebugViewModel()
     {
@@ -108,6 +116,8 @@ public partial class DebugViewModel : ViewModelBase
 
     #region Screenshot & Debug
 
+    private static readonly string LiveBufferPath = Path.Combine(AppContext.BaseDirectory, "screenshots", "live_buffer.png");
+
     [RelayCommand]
     private async Task TakeScreenshotAsync()
     {
@@ -115,18 +125,18 @@ public partial class DebugViewModel : ViewModelBase
         _log.Info("开始截图...");
         try
         {
-            var screenshotsDir = Path.Combine(AppContext.BaseDirectory, "screenshots");
-            if (!Directory.Exists(screenshotsDir))
-                Directory.CreateDirectory(screenshotsDir);
-            var path = Path.Combine(screenshotsDir, $"maaboss_screenshot_{DateTime.Now:HHmmss}.png");
-            var result = await _controller.ScreenshotAsync(path);
-            if (result.Success && File.Exists(path))
+            var bufferDir = Path.GetDirectoryName(LiveBufferPath)!;
+            if (!Directory.Exists(bufferDir))
+                Directory.CreateDirectory(bufferDir);
+
+            var result = await _controller.ScreenshotAsync(LiveBufferPath);
+            if (result.Success && File.Exists(LiveBufferPath))
             {
-                await using var stream = File.OpenRead(path);
-                Screenshot = new Bitmap(stream);
+                var bytes = File.ReadAllBytes(LiveBufferPath);
+                using var ms = new MemoryStream(bytes);
+                Screenshot = new Bitmap(ms);
                 UpdateDiagnostic(Screenshot);
-                _log.Info($"截图已保存: {path}");
-                WeakReferenceMessenger.Default.Send(new ScreenshotTakenMessage(path));
+                _log.Info($"截图已刷新: {LiveBufferPath}");
             }
             else
             {
@@ -138,6 +148,59 @@ public partial class DebugViewModel : ViewModelBase
             _log.Error($"截图异常: {ex.Message}");
         }
         IsBusy = false;
+    }
+
+    [RelayCommand]
+    private async Task ToggleLiveCaptureAsync()
+    {
+        if (IsLiveCapturing)
+        {
+            _liveCaptureCts?.Cancel();
+            IsLiveCapturing = false;
+            _log.Info("实时截图已停止");
+            return;
+        }
+
+        IsLiveCapturing = true;
+        _liveCaptureCts = new CancellationTokenSource();
+        var ct = _liveCaptureCts.Token;
+        _log.Info("实时截图已启动 (间隔 500ms，缓冲文件: live_buffer.png)");
+
+        var bufferDir = Path.GetDirectoryName(LiveBufferPath)!;
+        if (!Directory.Exists(bufferDir))
+            Directory.CreateDirectory(bufferDir);
+
+        _ = Task.Run(async () =>
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                try
+                {
+                    var result = await _controller.ScreenshotAsync(LiveBufferPath, ct);
+                    if (result.Success && File.Exists(LiveBufferPath))
+                    {
+                        await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            try
+                            {
+                                var bytes = File.ReadAllBytes(LiveBufferPath);
+                                using var ms = new MemoryStream(bytes);
+                                Screenshot = new Bitmap(ms);
+                                UpdateDiagnostic(Screenshot);
+                            }
+                            catch { /* 帧跳过，不记录噪音 */ }
+                        });
+                    }
+                }
+                catch (OperationCanceledException) { break; }
+                catch { /* 帧跳过 */ }
+
+                try { await Task.Delay(500, ct); }
+                catch (OperationCanceledException) { break; }
+            }
+        }, ct);
+
+        await Task.CompletedTask;
     }
 
     public async Task ClickAtAsync(int x, int y)
@@ -152,6 +215,23 @@ public partial class DebugViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Error($"点击异常: {ex.Message}");
+        }
+        IsBusy = false;
+    }
+
+    public async Task ScrollAtAsync(int x, int y, int delta)
+    {
+        IsBusy = true;
+        var dir = delta > 0 ? "↑ 向上" : "↓ 向下";
+        _log.Info($"截图滚轮坐标: ({x}, {y}), delta: {delta} ({dir})");
+        try
+        {
+            var result = await _controller.ScrollAsync(x, y, delta);
+            _log.Info(result.Success ? "滚动成功" : "滚动失败");
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"滚动异常: {ex.Message}");
         }
         IsBusy = false;
     }
@@ -254,7 +334,7 @@ public partial class DebugViewModel : ViewModelBase
             int scrollX = (int)(0.245 * ctrlW);  // (9.7% + 39.3%) / 2
             int scrollY = (int)(0.608 * ctrlH);  // (22.3% + 99.3%) / 2
             _log.Info($"[Flow] 滚动位置: ({scrollX}, {scrollY})，delta: -720");
-            await _controller.ScrollAsync(scrollX, scrollY, delta: -720, ct);
+            await _controller.ScrollAsync(scrollX, scrollY, delta: 720, ct);
             _log.Info("[Flow] 滚动完成");
             await Task.Delay(500, ct);
 

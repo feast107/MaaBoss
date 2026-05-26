@@ -24,7 +24,7 @@ public partial class MainWindowViewModel : ViewModelBase
         navService.RegisterViewModel("Dashboard", () => ServiceLocator.Get<DashboardViewModel>());
         navService.RegisterViewModel("Candidates", () => new CandidateBrowserViewModel());
         navService.RegisterViewModel("Chat", () => new ChatViewModel());
-        navService.RegisterViewModel("Debug", () => new DebugViewModel());
+        navService.RegisterViewModel("Debug", () => ServiceLocator.Get<DebugViewModel>());
         navService.RegisterViewModel("FlowEditor", () => new FlowEditorViewModel());
         navService.RegisterViewModel("Settings", () => ServiceLocator.Get<SettingsViewModel>());
 
