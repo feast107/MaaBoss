@@ -63,8 +63,10 @@ public class TaskService
 
         var candidates = new List<Candidate>
         {
-            new() { Name = "张三", Age = 28, Gender = "男", Experience = "5年", Education = "本科", CurrentCompany = "某某互联网公司", CurrentPosition = "Python 后端工程师", SalaryExpectation = "25k-40k", Location = "北京", Skills = new() { "Python", "Go", "Kubernetes" }, IsNew = true, ActiveStatus = "刚刚活跃" },
-            new() { Name = "李四", Age = 26, Gender = "女", Experience = "3年", Education = "硕士", CurrentCompany = "某某科技公司", CurrentPosition = "高级后端开发", SalaryExpectation = "20k-35k", Location = "北京", Skills = new() { "Python", "Django", "PostgreSQL" }, IsNew = false, ActiveStatus = "2小时前活跃" },
+            new() { Name = "张三", Age = 28, Gender = "男", Experience = "5年", Education = "本科", CurrentCompany = "某某互联网公司", CurrentPosition = "Python 后端工程师", SalaryExpectation = "25k-40k", Location = "北京", Skills =
+                ["Python", "Go", "Kubernetes"], IsNew = true, ActiveStatus = "刚刚活跃" },
+            new() { Name = "李四", Age = 26, Gender = "女", Experience = "3年", Education = "硕士", CurrentCompany = "某某科技公司", CurrentPosition = "高级后端开发", SalaryExpectation = "20k-35k", Location = "北京", Skills =
+                ["Python", "Django", "PostgreSQL"], IsNew = false, ActiveStatus = "2小时前活跃" },
         };
 
         return ToolResult.Ok(

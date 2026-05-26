@@ -65,6 +65,7 @@ public partial class DebugViewModel : ViewModelBase
 
     private readonly ControllerService _controller;
     private readonly LogService _log;
+    private readonly OcrService _ocr;
     private CancellationTokenSource? _flowCts;
     private CancellationTokenSource? _liveCaptureCts;
 
@@ -72,6 +73,7 @@ public partial class DebugViewModel : ViewModelBase
     {
         _controller = ServiceLocator.Get<ControllerService>();
         _log = ServiceLocator.Get<LogService>();
+        _ocr = ServiceLocator.Get<OcrService>();
 
         WeakReferenceMessenger.Default.Register<ConnectionStateChangedMessage>(this, (_, msg) =>
         {
@@ -266,6 +268,35 @@ public partial class DebugViewModel : ViewModelBase
         catch (Exception ex)
         {
             _log.Error($"重载异常: {ex.Message}");
+        }
+        IsBusy = false;
+    }
+
+    [RelayCommand]
+    private async Task OcrScreenshotAsync()
+    {
+        IsBusy = true;
+        _log.Info("开始对当前截图进行 OCR...");
+        try
+        {
+            var result = await _ocr.RecognizeAsync(LiveBufferPath);
+            if (!result.Success)
+            {
+                _log.Warn($"OCR 失败: {result.ErrorMessage}");
+                return;
+            }
+
+            _log.Info($"OCR 识别到 {result.Blocks.Count} 个文本块:");
+            foreach (var block in result.Blocks)
+            {
+                _log.Info($"  [{block.Score:F2}] {block.Text}");
+            }
+            if (!string.IsNullOrWhiteSpace(result.FullText))
+                _log.Info($"[OCR 全文]\n{result.FullText}");
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"OCR 异常: {ex.Message}");
         }
         IsBusy = false;
     }

@@ -1,9 +1,19 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="MaaBoss.Core/MaaBoss.Core.csproj" />
-    <Project Path="MaaBoss.Core.Tests/MaaBoss.Core.Tests.csproj" />
-    <Project Path="MaaBoss.Desktop/MaaBoss.Desktop.csproj" />
+    <Project Path="MaaBoss.Core/MaaBoss.Core.csproj">
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="MaaBoss.Core.Tests/MaaBoss.Core.Tests.csproj">
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="MaaBoss.Desktop/MaaBoss.Desktop.csproj">
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
   </Folder>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
   <Folder Name="/assets/">
     <File Path="../assets/pipeline/default_pipeline.json" />
     <File Path="../assets/pipeline/startup.json" />

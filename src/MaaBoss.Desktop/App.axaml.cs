@@ -23,11 +23,13 @@ public partial class App : Application
         var controllerService = new ControllerService();
         var taskService = new TaskService(controllerService);
         var logService = new LogService();
+        var ocrService = new OcrService();
         var settingsVm = new SettingsViewModel();
 
         ServiceLocator.Register(controllerService);
         ServiceLocator.Register(taskService);
         ServiceLocator.Register(logService);
+        ServiceLocator.Register(ocrService);
         ServiceLocator.Register(settingsVm);
 
         var dashboardVm = new DashboardViewModel();

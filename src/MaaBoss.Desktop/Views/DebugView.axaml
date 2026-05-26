@@ -89,6 +89,10 @@
                       Command="{Binding ToggleLiveCaptureCommand}"
                       Padding="12,4"
                       FontSize="12"/>
+              <Button Content="OCR 识别"
+                      Command="{Binding OcrScreenshotCommand}"
+                      Padding="12,4"
+                      FontSize="12"/>
             </StackPanel>
           </StackPanel>
         </Border>
